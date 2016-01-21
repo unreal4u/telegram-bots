@@ -1,4 +1,7 @@
 <?php
 
-define('BOT_TOKEN', '123123123:asdasdasdas-asdasdasdasdasdadasd_gg');
+define('BOT_TOKENS', [
+    '123123123:asdasdasdas-asdasdasdasdasdadasd_gg' => 'MyOneBot',
+    '123123123:asdasdasdas-asdasdasdasdasdadasd_hh' => 'MyOtherBot',
+]);
 
