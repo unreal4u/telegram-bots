@@ -17,35 +17,43 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
     $logger = new Logger($currentBot);
     $logger->pushHandler(new StreamHandler('../telegramApiLogs/main.log'));
 
-    $logger->addInfo(sprintf('New request on bot %s, converting $_POST data', $currentBot));
+    $logger->addDebug('--------------------------------');
+    $logger->addInfo(sprintf('New request on bot %s', $currentBot));
     $rest_json = file_get_contents("php://input");
     $_POST = json_decode($rest_json, true);
 
     try {
-        $logger->addDebug('New update received, trying to convert it to Update object');
         $update = new Update($_POST);
-        $logger->addDebug(print_r($_POST, true));
+        $logger->addDebug('Incoming post data', $_POST);
         if (!empty($update->message->chat->id)) {
-            $logger->addDebug(sprintf(
-                'Update class completed! Chat id: %d, user id: %d, user name: %s', 
+            $logger->addInfo(sprintf(
+                'Received message. Chat id: %d, user id: %d, user name: %s', 
                 $update->message->chat->id, 
                 $update->message->from->id, 
                 $update->message->from->username
             ));
         }
 
+        if (!empty($update->chosen_inline_result)) {
+            $logger->addDebug(print_r($update->chosen_inline_result, true));
+        }
+
         if (!empty($update->inline_query)) {
-            $logger->addDebug(sprintf(
-                'Received inline query request from user id %d (username: %s). Query: "%s", id: %s',
+            $logger->addInfo(sprintf(
+                'Received inline query. User id %d (username: %s). Query: "%s", inline query id: %s',
                 $update->inline_query->from->id,
                 $update->inline_query->from->username,
                 $update->inline_query->query,
                 $update->inline_query->id
             ));
 
-            $logger->addInfo(sprintf('The written query is: "%s"', $update->inline_query->query));
+            $query = $update->inline_query->query;
+            if (empty($query)) {
+                $query = 'What is lmgtfy?';
+            }
+
             $inlineQueryResultArticle = new InlineQueryResultArticle();
-            $inlineQueryResultArticle->url = 'http://lmgtfy.com/?q='.urlencode($update->inline_query->query);
+            $inlineQueryResultArticle->url = 'http://lmgtfy.com/?q='.urlencode($query);
             $inlineQueryResultArticle->title = $inlineQueryResultArticle->url; //'Forward this message to anyone you would like (Title)';
             $inlineQueryResultArticle->message_text = $inlineQueryResultArticle->url; //'Forward this message to anyone you would like (Message)';
             $inlineQueryResultArticle->disable_web_page_preview = true;
@@ -55,8 +63,6 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
             $answerInlineQuery = new AnswerInlineQuery();
             $answerInlineQuery->inline_query_id = $update->inline_query->id;
             $answerInlineQuery->results[] = $inlineQueryResultArticle;
-
-            $logger->addInfo(sprintf('About to send information back to user (inline_query_id: "%s")', $update->inline_query_id));
 
             $tgLog = new TgLog($parsedRequestUri);
             $tgLog->logger = $logger;

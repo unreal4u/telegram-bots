@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8b6dfb8fd0ddea98aef48ea1b362fead",
+    "hash": "0af2ea00b3fbfac0d54e0fab5bf1fdaa",
     "content-hash": "f1c9a767225dd62e8de40121b1c8154d",
     "packages": [
         {
@@ -348,12 +348,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unreal4u/telegram-api.git",
-                "reference": "58f3877b3f3074813c26b59a7bc5fc5d7b44023d"
+                "reference": "87739ced0bfac9bba71325b02aa7c6afacb96a9d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/58f3877b3f3074813c26b59a7bc5fc5d7b44023d",
-                "reference": "58f3877b3f3074813c26b59a7bc5fc5d7b44023d",
+                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/87739ced0bfac9bba71325b02aa7c6afacb96a9d",
+                "reference": "87739ced0bfac9bba71325b02aa7c6afacb96a9d",
                 "shasum": ""
             },
             "require": {
@@ -368,7 +368,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "unreal4u\\": "src/unreal4u"
+                    "unreal4u\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -388,7 +388,7 @@
                 "telegram",
                 "telegram bot"
             ],
-            "time": "2016-01-20 22:19:23"
+            "time": "2016-01-21 21:36:52"
         }
     ],
     "packages-dev": [],
