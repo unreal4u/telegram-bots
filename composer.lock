@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0af2ea00b3fbfac0d54e0fab5bf1fdaa",
-    "content-hash": "f1c9a767225dd62e8de40121b1c8154d",
+    "hash": "bf94eaa534c7701385dfee6ac9a49c4b",
+    "content-hash": "80cfa23f63ead8764df5b9d2106d3a72",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -122,16 +122,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.2.1",
+            "version": "1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "4d0bdbe1206df7440219ce14c972aa57cc5e4982"
+                "reference": "f5d04bdd2881ac89abde1fb78cc234bce24327bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/4d0bdbe1206df7440219ce14c972aa57cc5e4982",
-                "reference": "4d0bdbe1206df7440219ce14c972aa57cc5e4982",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/f5d04bdd2881ac89abde1fb78cc234bce24327bb",
+                "reference": "f5d04bdd2881ac89abde1fb78cc234bce24327bb",
                 "shasum": ""
             },
             "require": {
@@ -176,7 +176,7 @@
                 "stream",
                 "uri"
             ],
-            "time": "2015-11-03 01:34:55"
+            "time": "2016-01-23 01:23:02"
         },
         {
             "name": "monolog/monolog",
@@ -344,16 +344,16 @@
         },
         {
             "name": "unreal4u/telegram-api",
-            "version": "dev-inlineBots",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/unreal4u/telegram-api.git",
-                "reference": "87739ced0bfac9bba71325b02aa7c6afacb96a9d"
+                "reference": "ce1742db1626b98f0c18dca40062b14c1d0bbcea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/87739ced0bfac9bba71325b02aa7c6afacb96a9d",
-                "reference": "87739ced0bfac9bba71325b02aa7c6afacb96a9d",
+                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/ce1742db1626b98f0c18dca40062b14c1d0bbcea",
+                "reference": "ce1742db1626b98f0c18dca40062b14c1d0bbcea",
                 "shasum": ""
             },
             "require": {
@@ -388,22 +388,13 @@
                 "telegram",
                 "telegram bot"
             ],
-            "time": "2016-01-21 21:36:52"
+            "time": "2016-01-23 23:51:09"
         }
     ],
     "packages-dev": [],
-    "aliases": [
-        {
-            "alias": "1.1.x-dev",
-            "alias_normalized": "1.1.9999999.9999999-dev",
-            "version": "dev-inlineBots",
-            "package": "unreal4u/telegram-api"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "unreal4u/telegram-api": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
