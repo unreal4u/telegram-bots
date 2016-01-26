@@ -4,7 +4,7 @@ namespace unreal4u\Bots;
 
 use Psr\Log\LoggerInterface;
 
-class uptimeMonitorBot
+class uptimeMonitorBot implements BotsInterface
 {
     public function __construct(LoggerInterface $logger, string $token)
     {

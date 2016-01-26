@@ -1,6 +1,6 @@
 <?php
 
-include('../conf.php');
+include('../src/common.php');
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -14,7 +14,7 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
     $currentBot = BOT_TOKENS[$parsedRequestUri];
 
     $logger = new Logger($currentBot);
-    $logger->pushHandler(new StreamHandler('../telegramApiLogs/main.log'));
+    $logger->pushHandler(new StreamHandler('telegramApiLogs/main.log'));
 
     $logger->addDebug('--------------------------------');
     $logger->addInfo(sprintf('New request on bot %s', $currentBot));
