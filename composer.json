@@ -2,6 +2,7 @@
     "require" : {
         "php" : ">=7.0",
         "ext-mbstring": "*",
+        "psr/log": "~1.0",
         "monolog/monolog": "~1.17",
         "unreal4u/telegram-api": "~1.0"
     },

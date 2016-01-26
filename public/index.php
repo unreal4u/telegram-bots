@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 include('../conf.php');
 
@@ -8,8 +8,6 @@ use unreal4u\Telegram\Types\Update;
 use unreal4u\Telegram\Types\InlineQueryResultArticle;
 use unreal4u\Telegram\Methods\AnswerInlineQuery;
 use unreal4u\TgLog;
-
-use unreal4u\unreal4uBot\Bot;
 
 $parsedRequestUri = trim($_SERVER['REQUEST_URI'], '/');
 if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
@@ -24,11 +22,11 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
     $_POST = json_decode($rest_json, true);
 
     try {
-        $completeName = 'unreal4u\\' . $currentBot . '\\Bot';
+        $completeName = 'unreal4u\\Bots\\' . $currentBot;
         $bot = new $completeName($logger, $parsedRequestUri);
         $bot->run($_POST);
     } catch (\Exception $e) {
-        $logger->addError(sprintf('Captured exception: "%s"',$e->getMessage()));
+        $logger->addError(sprintf('Captured exception: "%s"', $e->getMessage()));
     }
 } else {
     header('Location: https://github.com/unreal4u?tab=repositories', true, 302);
