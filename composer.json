@@ -5,6 +5,11 @@
         "monolog/monolog": "~1.17",
         "unreal4u/telegram-api": "~1.0"
     },
+    "autoload": {
+      "psr-4": {
+        "unreal4u\\": "src"
+      }
+    },
     "scripts": {
         "post-install-cmd": [
             "mkdir -p telegramApiLogs",
