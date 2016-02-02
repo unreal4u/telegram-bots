@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ed916c806ec99095d2722b63b9d6904e",
-    "content-hash": "1beaf1bdccf392ef64cf0592ada52fd4",
+    "hash": "065cd544226e9a612ed8e15644c0b639",
+    "content-hash": "9c1e8587001da9adef6ed365e47e91e4",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -343,22 +343,65 @@
             "time": "2012-12-21 11:40:51"
         },
         {
-            "name": "unreal4u/telegram-api",
-            "version": "v1.1.0",
+            "name": "unreal4u/localization",
+            "version": "v0.4.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/unreal4u/telegram-api.git",
-                "reference": "ce1742db1626b98f0c18dca40062b14c1d0bbcea"
+                "url": "https://github.com/unreal4u/localization.git",
+                "reference": "fb627429f303c5e83f377bd93f22ca6237c56f4a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/ce1742db1626b98f0c18dca40062b14c1d0bbcea",
-                "reference": "ce1742db1626b98f0c18dca40062b14c1d0bbcea",
+                "url": "https://api.github.com/repos/unreal4u/localization/zipball/fb627429f303c5e83f377bd93f22ca6237c56f4a",
+                "reference": "fb627429f303c5e83f377bd93f22ca6237c56f4a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-intl": "*",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/php-code-coverage": "@stable",
+                "phpunit/phpunit": "@stable",
+                "unreal4u/debug-info": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "unreal4u": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Camilo Sperberg",
+                    "email": "me@unreal4u.com"
+                }
+            ],
+            "description": "This class sets almost all locale settings and makes your life easier by doing so",
+            "time": "2014-04-28 23:01:00"
+        },
+        {
+            "name": "unreal4u/telegram-api",
+            "version": "v1.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/unreal4u/telegram-api.git",
+                "reference": "ef81da2f3e81dfa87a1b58fc6a340ca5b4d7e2bc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/ef81da2f3e81dfa87a1b58fc6a340ca5b4d7e2bc",
+                "reference": "ef81da2f3e81dfa87a1b58fc6a340ca5b4d7e2bc",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "~6.0",
-                "php": ">=7.0.0"
+                "php": ">=7.0.0",
+                "psr/log": "~1.0"
             },
             "require-dev": {
                 "phpmd/phpmd": "@stable",
@@ -382,19 +425,21 @@
                     "homepage": "https://github.com/unreal4u/telegram-api/graphs/contributors"
                 }
             ],
-            "description": "Complete implementation used to communicate with the open-source Telegram API",
+            "description": "A complete Telegram bot API implementation written in PHP, with support for inline bots!",
             "keywords": [
                 "api",
                 "telegram",
                 "telegram bot"
             ],
-            "time": "2016-01-23 23:51:09"
+            "time": "2016-01-31 00:37:04"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "unreal4u/localization": 0
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
