@@ -48,7 +48,7 @@ class TheTimeBot implements BotsInterface
             } else {
                 $this->arguments = substr($update->message->text, $spacePosition + 1);
             }
-            $this->command = trim(substr($update->message->text, 1, $spacePosition));
+            $this->command = strtolower(trim(substr($update->message->text, 1, $spacePosition)));
             $this->logger->info(sprintf('The requested command is "%s". Arguments are "%s"', $this->command, $this->arguments));
         }
 
@@ -70,16 +70,21 @@ class TheTimeBot implements BotsInterface
                 $messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
                 break;
             case 'get_time_for_timezone':
-                try {
-                    $messageText = sprintf('The time in %s is now %s', $this->arguments, $this->getTheTime());
-                    $this->logger->info(sprintf('"%s" is a valid timezone, sending information back to user', $this->arguments));
-                } catch (\Exception $e) {
-                    $this->logger->warning('Invalid timezone detected', ['timezone' => $this->arguments]);
-                    $messageText = sprintf(
-                        'Sorry but "%s" is not a valid timezone identifier. Please check %s for all possible timezone identifiers',
-                        $this->arguments,
-                        'http://php.net/manual/en/timezones.php'
-                    );
+                if (empty($this->arguments)) {
+                    $this->logger->warning('Valid command found but invalid arguments');
+                    $messageText = 'Please provide a valid timezone identifier';
+                } else {
+                    try {
+                        $messageText = sprintf('The date & time in *%s* is now *%s*', $this->arguments, $this->getTheTime());
+                        $this->logger->info(sprintf('"%s" is a valid timezone, sending information back to user', $this->arguments));
+                    } catch (\Exception $e) {
+                        $this->logger->warning('Invalid timezone detected', ['timezone' => $this->arguments]);
+                        $messageText = sprintf(
+                            'Sorry but "*%s*" is not a valid timezone identifier. Please check [the following list](%s) for all possible timezone identifiers',
+                            $this->arguments,
+                            'http://php.net/manual/en/timezones.php'
+                        );
+                    }
                 }
                 break;
             case 'set_display_format':
@@ -120,7 +125,7 @@ class TheTimeBot implements BotsInterface
         $localization = new localization();
         $acceptedTimezone = $localization->setTimezone($this->arguments);
 
-        if ($acceptedTimezone == $this->arguments) {
+        if ($acceptedTimezone === $this->arguments) {
             $theTime = $localization->formatSimpleDate(0, $acceptedTimezone).' '.$localization->formatSimpleTime(0, $acceptedTimezone);
         } else {
             throw new \Exception('Invalid timezone, please try again');
