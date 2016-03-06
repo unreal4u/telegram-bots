@@ -14,7 +14,9 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
     $currentBot = BOT_TOKENS[$parsedRequestUri];
 
     $logger = new Logger($currentBot);
-    $logger->pushHandler(new StreamHandler('telegramApiLogs/main.log'));
+    $streamHandler = new StreamHandler('telegramApiLogs/main.log');
+    $streamHandler->setLevel(Logger::INFO);
+    $logger->pushHandler($streamHandler);
 
     $logger->addDebug('--------------------------------');
     $logger->addInfo(sprintf('New request on bot %s', $currentBot));
