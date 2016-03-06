@@ -113,28 +113,39 @@ class unreal4uBot implements BotsInterface
         return $this;
     }
 
+    /**
+     * @FIXME this function name will probably change in the future!
+     * This will download a file and offer it to the user
+     */
     private function downloadSticker(Message $message): unreal4uBot
     {
         $this->logger->debug(sprintf('Got a sticker request, downloading sticker'));
-        $getFile = new GetFile();
-        $getFile->file_id = $message->sticker->file_id;
-        $tgLog = new TgLog();
-        $file = $tgLog->performAction($getFile);
-        $tgDocument = $tgLog->downloadFile($file);
-
-        $this->logger->debug('Downloaded sticker, sending it to temporary directory');
-        file_put_contents(sprintf('../media/%s', basename($file->file_path)), $tgDocument);
 
         $sendMessage = new SendMessage();
         $sendMessage->chat_id = $message->chat->id;
-        $sendMessage->text = sprintf(
-            'Download link for sticker: http://media.unreal4u.com/%s',
-            basename($file->file_path)
-        );
+
+        try {
+            $getFile = new GetFile();
+            $getFile->file_id = $message->sticker->file_id;
+            $tgLog = new TgLog($this->token, $this->logger);
+            $file = $tgLog->performApiRequest($getFile);
+            $tgDocument = $tgLog->downloadFile($file);
+            $this->logger->debug('Downloaded sticker, sending it to temporary directory');
+            $this->logger->debug('File contents', ['file' => $tgDocument]);
+            file_put_contents(sprintf('media/%s', basename($file->file_path)), (string)$tgDocument);
+
+            $sendMessage->text = sprintf(
+                'Download link for sticker: http://media.unreal4u.com/%s',
+                basename($file->file_path)
+            );
+        } catch (\Exception $e) {
+            $this->logger->error('Problem downloading sticker: '.$e->getMessage());
+            $sendMessage->text = sprintf('There was a problem downloading your sticker, please retry later');
+        }
         
         try {
             $tgLog->performApiRequest($sendMessage);
-            $this->logger->debug('Sent message with download link to user');
+            $this->logger->debug('Sent message to user');
         } catch (\Exception $e) {
             $this->logger->warning('Caught exception while trying to send message to user: ' . $e->getMessage());
         }
