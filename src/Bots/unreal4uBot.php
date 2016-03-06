@@ -6,8 +6,11 @@ use unreal4u\Telegram\Types\Update;
 use unreal4u\Telegram\Types\Message;
 use unreal4u\Telegram\Types\InlineQueryResultArticle;
 use unreal4u\Telegram\Methods\AnswerInlineQuery;
+use unreal4u\Telegram\Methods\GetFile;
+use unreal4u\Telegram\Methods\SendMessage;
 use unreal4u\TgLog;
 use Psr\Log\LoggerInterface;
+use GuzzleHttp\Client;
 
 class unreal4uBot implements BotsInterface
 {
@@ -66,6 +69,10 @@ class unreal4uBot implements BotsInterface
             $message->from->username
         ));
 
+        if (!empty($message->sticker->file_id)) {
+            $this->downloadSticker($message);
+        }
+
         return $this;
     }
 
@@ -102,6 +109,35 @@ class unreal4uBot implements BotsInterface
         //$tgLog->logger = $this->logger;
         $tgLog->performApiRequest($answerInlineQuery);
         $this->logger->info(sprintf('Sent API response to Telegram, all done'));
+
+        return $this;
+    }
+
+    private function downloadSticker(Message $message): unreal4uBot
+    {
+        $this->logger->debug(sprintf('Got a sticker request, downloading sticker'));
+        $getFile = new GetFile();
+        $getFile->file_id = $message->sticker->file_id;
+        $tgLog = new TgLog();
+        $file = $tgLog->performAction($getFile);
+        $tgDocument = $tgLog->downloadFile($file);
+
+        $this->logger->debug('Downloaded sticker, sending it to temporary directory');
+        file_put_contents(sprintf('../media/%s', basename($file->file_path)), $tgDocument);
+
+        $sendMessage = new SendMessage();
+        $sendMessage->chat_id = $message->chat->id;
+        $sendMessage->text = sprintf(
+            'Download link for sticker: http://media.unreal4u.com/%s',
+            basename($file->file_path)
+        );
+        
+        try {
+            $tgLog->performApiRequest($sendMessage);
+            $this->logger->debug('Sent message with download link to user');
+        } catch (\Exception $e) {
+            $this->logger->warning('Caught exception while trying to send message to user: ' . $e->getMessage());
+        }
 
         return $this;
     }
