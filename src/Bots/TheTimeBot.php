@@ -2,11 +2,11 @@
 
 namespace unreal4u\Bots;
 
-use unreal4u\Telegram\Types\Update;
-use unreal4u\Abstracts\TelegramTypes;
-use unreal4u\Telegram\Types\Chat;
-use unreal4u\Telegram\Methods\SendMessage;
-use unreal4u\TgLog;
+use unreal4u\TelegramAPI\Telegram\Types\Update;
+use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
+use unreal4u\TelegramAPI\Telegram\Types\Chat;
+use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\TgLog;
 use unreal4u\localization;
 use Psr\Log\LoggerInterface;
 
@@ -75,6 +75,7 @@ class TheTimeBot implements BotsInterface
                     $messageText = 'Please provide a valid timezone identifier';
                 } else {
                     try {
+                        $this->formatTimezone();
                         $messageText = sprintf('The date & time in *%s* is now *%s*', $this->arguments, $this->getTheTime());
                         $this->logger->info(sprintf('"%s" is a valid timezone, sending information back to user', $this->arguments));
                     } catch (\Exception $e) {
@@ -115,6 +116,18 @@ class TheTimeBot implements BotsInterface
         $sendMessage->parse_mode = 'Markdown';
 
         return $sendMessage;
+    }
+
+    protected function formatTimezone()
+    {
+        $return = '';
+        $parts = explode('/', $this->arguments);
+        foreach ($parts as $part) {
+            $return .= ucwords($part) . '/';
+        }
+
+        $this->arguments = trim($return, '/');
+        return $this;
     }
 
     protected function getTheTime(): string

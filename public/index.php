@@ -4,10 +4,10 @@ include('../src/common.php');
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use unreal4u\Telegram\Types\Update;
-use unreal4u\Telegram\Types\InlineQueryResultArticle;
-use unreal4u\Telegram\Methods\AnswerInlineQuery;
-use unreal4u\TgLog;
+use unreal4u\TelegramAPI\Telegram\Types\Update;
+use unreal4u\TelegramAPI\Telegram\Types\InlineQueryResultArticle;
+use unreal4u\TelegramAPI\Telegram\Methods\AnswerInlineQuery;
+use unreal4u\TelegramAPI\TgLog;
 
 $parsedRequestUri = trim($_SERVER['REQUEST_URI'], '/');
 if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
@@ -15,7 +15,7 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
 
     $logger = new Logger($currentBot);
     $streamHandler = new StreamHandler('telegramApiLogs/main.log');
-    $streamHandler->setLevel(Logger::INFO);
+    #$streamHandler->setLevel(Logger::INFO);
     $logger->pushHandler($streamHandler);
 
     $logger->addDebug('--------------------------------');

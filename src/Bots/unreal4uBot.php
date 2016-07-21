@@ -2,13 +2,13 @@
 
 namespace unreal4u\Bots;
 
-use unreal4u\Telegram\Types\Update;
-use unreal4u\Telegram\Types\Message;
-use unreal4u\Telegram\Types\InlineQueryResultArticle;
-use unreal4u\Telegram\Methods\AnswerInlineQuery;
-use unreal4u\Telegram\Methods\GetFile;
-use unreal4u\Telegram\Methods\SendMessage;
-use unreal4u\TgLog;
+use unreal4u\TelegramAPI\Telegram\Types\Update;
+use unreal4u\TelegramAPI\Telegram\Types\Message;
+use unreal4u\TelegramAPI\Telegram\Types\InlineQueryResultArticle;
+use unreal4u\TelegramAPI\Telegram\Methods\AnswerInlineQuery;
+use unreal4u\TelegramAPI\Telegram\Methods\GetFile;
+use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\TgLog;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 
@@ -131,8 +131,10 @@ class unreal4uBot implements BotsInterface
             $file = $tgLog->performApiRequest($getFile);
             $tgDocument = $tgLog->downloadFile($file);
             $this->logger->debug('Downloaded sticker, sending it to temporary directory');
-            $this->logger->debug('File contents', ['file' => $tgDocument]);
             file_put_contents(sprintf('media/%s', basename($file->file_path)), (string)$tgDocument);
+            #$image = \imagecreatefromwebp(sprintf('media/%s', basename($file->file_path)));
+            #\imagepng($image, 'media/'.basename($file->file_path).'.png');
+            #\imagedestroy($image);
 
             $sendMessage->text = sprintf(
                 'Download link for sticker: http://media.unreal4u.com/%s',
