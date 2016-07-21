@@ -9,6 +9,8 @@ use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\localization;
 use Psr\Log\LoggerInterface;
+use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 
 class TheTimeBot implements BotsInterface
 {
@@ -21,6 +23,8 @@ class TheTimeBot implements BotsInterface
      */
     private $token;
 
+    private $HTTPClient = null;
+
     protected $command = '';
 
     protected $arguments = '';
@@ -29,6 +33,7 @@ class TheTimeBot implements BotsInterface
     {
         $this->logger = $logger;
         $this->token = $token;
+        $this->HTTPClient = new Client();
     }
 
     public function run(array $postData=[])
@@ -41,15 +46,20 @@ class TheTimeBot implements BotsInterface
 
     public function performAction(Update $update) 
     {
-        if (!empty($update->message->text)) {
-            $spacePosition = strpos($update->message->text, ' ');
-            if ($spacePosition === false) {
-                $spacePosition = strlen($update->message->text);
-            } else {
-                $this->arguments = substr($update->message->text, $spacePosition + 1);
-            }
-            $this->command = strtolower(trim(substr($update->message->text, 1, $spacePosition)));
+        if (empty($update->message->text) && !empty($update->edited_message->text)) {
+            // We'll treat updates the same way as simple messages, maybe in the future edit the original sent msg as well?
+            $update->message = $update->edited_message;
+        }
+
+        if (!empty($update->message->entities)) {
+            $this->command = trim(strtolower(mb_substr($update->message->text, $update->message->entities[0]->offset + 1, $update->message->entities[0]->length)));
+            $this->arguments = trim(substr($update->message->text, $update->message->entities[0]->length));
             $this->logger->info(sprintf('The requested command is "%s". Arguments are "%s"', $this->command, $this->arguments));
+        }
+
+        if (!empty($update->message->location)) {
+            $this->command = 'getTimeByLocation';
+            $this->arguments = $update->message->location;
         }
 
         $sendMessage = $this->prepareUserMessage($this->constructBasicMessage(), $update->message->chat);
@@ -68,7 +78,20 @@ class TheTimeBot implements BotsInterface
                 $messageText = 'Example commands:'.PHP_EOL;
                 $messageText .= '`/get_time_for_timezone America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
                 $messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
+                $messageText .= 'You can also send a custom location (Works only from your phone for now)';
                 break;
+            case 'getTimeByLocation':
+                $messageText = 'Knowing what time it is based on a custom location will soon be implemented! ';
+                $messageText .= sprintf('Chosen location: %.05f lon, %.05f lat', $this->arguments->longitude, $this->arguments->latitude);
+                $answer = $this->HTTPClient->get(sprintf(
+                    'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
+                    $this->arguments->latitude,
+                    $this->arguments->longitude,
+                    'TheTimeBotTelegram'
+                ));
+                $decodedJson = json_decode((string)$answer->getBody());
+                $this->arguments = $decodedJson->timezoneId;
+                $this->logger->info(sprintf('Timezone we must get data from is %s, passing on to next function', $timezoneId));
             case 'get_time_for_timezone':
                 if (empty($this->arguments)) {
                     $this->logger->warning('Valid command found but invalid arguments');
@@ -103,7 +126,7 @@ class TheTimeBot implements BotsInterface
     protected function sendToUser(SendMessage $sendMessage): TelegramTypes
     {
         $this->logger->debug('Sending the message to user');
-        $tgLog = new TgLog($this->token, $this->logger);
+        $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
         return $tgLog->performApiRequest($sendMessage);
     }
 
