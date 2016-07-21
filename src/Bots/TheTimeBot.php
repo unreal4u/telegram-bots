@@ -91,7 +91,7 @@ class TheTimeBot implements BotsInterface
                 ));
                 $decodedJson = json_decode((string)$answer->getBody());
                 $this->arguments = $decodedJson->timezoneId;
-                $this->logger->info(sprintf('Timezone we must get data from is %s, passing on to next function', $timezoneId));
+                $this->logger->info(sprintf('Timezone we must get data from is %s, passing on to next function', $this->arguments));
             case 'get_time_for_timezone':
                 if (empty($this->arguments)) {
                     $this->logger->warning('Valid command found but invalid arguments');
