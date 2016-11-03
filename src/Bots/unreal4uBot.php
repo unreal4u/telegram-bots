@@ -4,7 +4,8 @@ namespace unreal4u\Bots;
 
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
-use unreal4u\TelegramAPI\Telegram\Types\InlineQueryResultArticle;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Query\Result\Article;
+use unreal4u\TelegramAPI\Telegram\Types\InputMessageContent\Text;
 use unreal4u\TelegramAPI\Telegram\Methods\AnswerInlineQuery;
 use unreal4u\TelegramAPI\Telegram\Methods\GetFile;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
@@ -93,17 +94,19 @@ class unreal4uBot implements BotsInterface
         // Number of results
         $i = 1;
 
-        $inlineQueryResultArticle = new InlineQueryResultArticle();
+        $inlineQueryResultArticle = new Article();
         $inlineQueryResultArticle->url = 'http://lmgtfy.com/?q=' . urlencode($query);
         $inlineQueryResultArticle->title = $inlineQueryResultArticle->url; //'Forward this message to anyone you would like (Title)';
-        $inlineQueryResultArticle->message_text = $inlineQueryResultArticle->url; //'Forward this message to anyone you would like (Message)';
-        $inlineQueryResultArticle->disable_web_page_preview = true;
         $inlineQueryResultArticle->hide_url = true;
+        $inputMessageContentText = new Text();
+        $inputMessageContentText->message_text = $inlineQueryResultArticle->url;
+        $inputMessageContentText->disable_web_page_preview = true;
+        $inlineQueryResultArticle->input_message_content = $inputMessageContentText;
         // @TODO find a way to compress this all into an identifiable 64bit ascii string, maybe with pack()?
         $inlineQueryResultArticle->id = md5(json_encode(['uid' => $update->inline_query->from->id, 'iqid' => $update->inline_query->id, 'rid' => $i]));
         $answerInlineQuery = new AnswerInlineQuery();
         $answerInlineQuery->inline_query_id = $update->inline_query->id;
-        $answerInlineQuery->results[] = $inlineQueryResultArticle;
+        $answerInlineQuery->addResult($inlineQueryResultArticle);
 
         $tgLog = new TgLog($this->token, $this->logger);
         //$tgLog->logger = $this->logger;

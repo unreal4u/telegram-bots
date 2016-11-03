@@ -70,15 +70,15 @@ class TheTimeBot implements BotsInterface
 
     protected function constructBasicMessage(): string
     {
+        $messageText = '';
         switch ($this->command) {
             case 'start':
-                $messageText = 'Welcome! Consult /help to get a list of command and options.';
-                break;
+                $messageText = 'Welcome! Consult /help at any time to get a list of command and options.'.PHP_EOL;
             case 'help':
-                $messageText = 'Example commands:'.PHP_EOL;
-                $messageText .= '`/get_time_for_timezone America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
-                $messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
-                $messageText .= 'You can also send a custom location (Works only from your phone for now)';
+                $messageText .= '*Example commands:*'.PHP_EOL;
+                $messageText .= '- `/get_time_for_timezone America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
+                //$messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
+                $messageText .= '- You can also send a location (Works from phone only)';
                 break;
             case 'getTimeByLocation':
                 $messageText = 'Knowing what time it is based on a custom location will soon be implemented! ';
@@ -99,7 +99,7 @@ class TheTimeBot implements BotsInterface
                 } else {
                     try {
                         $this->formatTimezone();
-                        $messageText = sprintf('The date & time in *%s* is now *%s*', $this->arguments, $this->getTheTime());
+                        $messageText = sprintf('The date & time in *%s* is now *%s hours*', $this->arguments, $this->getTheTime());
                         $this->logger->info(sprintf('"%s" is a valid timezone, sending information back to user', $this->arguments));
                     } catch (\Exception $e) {
                         $this->logger->warning('Invalid timezone detected', ['timezone' => $this->arguments]);
@@ -163,6 +163,7 @@ class TheTimeBot implements BotsInterface
 
         if ($acceptedTimezone === $this->arguments) {
             $theTime = $localization->formatSimpleDate(0, $acceptedTimezone).' '.$localization->formatSimpleTime(0, $acceptedTimezone);
+            $theTime .= '; Offset: '.$localization->getTimezoneOffset('hours');
         } else {
             throw new \Exception('Invalid timezone, please try again');
         }

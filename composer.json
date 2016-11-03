@@ -6,7 +6,7 @@
         "psr/log": "~1.0",
         "monolog/monolog": "~1.17",
         "doctrine/orm": "2.5.*",
-        "unreal4u/telegram-api": "~2.0@dev",
+        "unreal4u/telegram-api": "@dev",
         "unreal4u/localization": "@stable"
     },
     "autoload": {
