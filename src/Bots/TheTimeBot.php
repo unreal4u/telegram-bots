@@ -1,6 +1,6 @@
 <?php
 
-namespace unreal4u\Bots;
+namespace unreal4u\TelegramBots\Bots;
 
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
@@ -8,43 +8,22 @@ use unreal4u\TelegramAPI\Telegram\Types\Chat;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\localization;
-use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 
-class TheTimeBot implements BotsInterface
+class TheTimeBot extends BotsImplementation
 {
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-    /**
-     * @var string
-     */
-    private $token;
-
-    private $HTTPClient = null;
-
     protected $command = '';
 
     protected $arguments = '';
 
-    public function __construct(LoggerInterface $logger, string $token)
-    {
-        $this->logger = $logger;
-        $this->token = $token;
-        $this->HTTPClient = new Client();
-    }
-
-    public function run(array $postData=[])
+    public function run(array $postData=[]): Bots
     {
         $update = new Update($postData, $this->logger);
         $this->logger->debug('Incoming data', $postData);
         $this->performAction($update);
-	return $this;
+        return $this;
     }
 
-    public function performAction(Update $update) 
+    public function performAction(Update $update): TheTimeBot
     {
         if (empty($update->message->text) && !empty($update->edited_message->text)) {
             // We'll treat updates the same way as simple messages, maybe in the future edit the original sent msg as well?
@@ -52,9 +31,17 @@ class TheTimeBot implements BotsInterface
         }
 
         if (!empty($update->message->entities)) {
-            $this->command = trim(strtolower(mb_substr($update->message->text, $update->message->entities[0]->offset + 1, $update->message->entities[0]->length)));
+            $this->command = trim(strtolower(mb_substr(
+                $update->message->text,
+                $update->message->entities[0]->offset + 1,
+                $update->message->entities[0]->length
+            )));
             $this->arguments = trim(substr($update->message->text, $update->message->entities[0]->length));
-            $this->logger->info(sprintf('The requested command is "%s". Arguments are "%s"', $this->command, $this->arguments));
+            $this->logger->info(sprintf(
+                'The requested command is "%s". Arguments are "%s"',
+                $this->command,
+                $this->arguments
+            ));
         }
 
         if (!empty($update->message->location)) {
@@ -81,8 +68,7 @@ class TheTimeBot implements BotsInterface
                 $messageText .= '- You can also send a location (Works from phone only)';
                 break;
             case 'getTimeByLocation':
-                $messageText = 'Knowing what time it is based on a custom location will soon be implemented! ';
-                $messageText .= sprintf('Chosen location: %.05f lon, %.05f lat', $this->arguments->longitude, $this->arguments->latitude);
+                $this->logger->debug(sprintf('Asking Geonames what timezone is lat: %s and lng: %s', $this->arguments->latitude, $this->arguments->longitude));
                 $answer = $this->HTTPClient->get(sprintf(
                     'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
                     $this->arguments->latitude,
@@ -91,7 +77,7 @@ class TheTimeBot implements BotsInterface
                 ));
                 $decodedJson = json_decode((string)$answer->getBody());
                 $this->arguments = $decodedJson->timezoneId;
-                $this->logger->info(sprintf('Timezone we must get data from is %s, passing on to next function', $this->arguments));
+                $this->logger->info(sprintf('Timezone we must get data from is %s, passing arguments on to get_time_for_timezone', $this->arguments));
             case 'get_time_for_timezone':
                 if (empty($this->arguments)) {
                     $this->logger->warning('Valid command found but invalid arguments');
@@ -141,7 +127,7 @@ class TheTimeBot implements BotsInterface
         return $sendMessage;
     }
 
-    protected function formatTimezone()
+    protected function formatTimezone(): TheTimeBot
     {
         $return = '';
         $parts = explode('/', $this->arguments);

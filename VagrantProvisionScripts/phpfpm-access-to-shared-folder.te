@@ -1,0 +1,18 @@
+
+module allowphpfpmtovagrant 1.0;
+
+require {
+	type httpd_t;
+	type user_home_t;
+	type hugetlbfs_t;
+	type vmblock_t;
+	class dir write;
+	class file { write read getattr open };
+}
+
+#============= httpd_t ==============
+allow httpd_t hugetlbfs_t:file write;
+allow httpd_t user_home_t:dir write;
+
+allow httpd_t user_home_t:file read;
+allow httpd_t vmblock_t:file { read getattr open };

@@ -1,18 +1,16 @@
 <?php
 
-namespace unreal4u\Bots;
+namespace unreal4u\TelegramBots\Bots;
 
-use Psr\Log\LoggerInterface;
+use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 
-class uptimeMonitorBot implements BotsInterface
-{
-    public function __construct(LoggerInterface $logger, string $token)
+class UptimeMonitorBot extends BotsImplementation {
+    public function run(array $postData=[]): Bots
     {
+        $this
+            ->extractBasicInformation($postData)
+        ;
 
-    }
-
-    public function run(array $postData=[])
-    {
-
+        return $this;
     }
 }

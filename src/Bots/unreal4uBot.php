@@ -1,6 +1,6 @@
 <?php
 
-namespace unreal4u\Bots;
+namespace unreal4u\TelegramBots\Bots;
 
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
@@ -10,26 +10,9 @@ use unreal4u\TelegramAPI\Telegram\Methods\AnswerInlineQuery;
 use unreal4u\TelegramAPI\Telegram\Methods\GetFile;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\TgLog;
-use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
 
-class unreal4uBot implements BotsInterface
+class unreal4uBot extends BotsImplementation
 {
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-    /**
-     * @var string
-     */
-    private $token;
-
-    public function __construct(LoggerInterface $logger, string $token)
-    {
-        $this->logger = $logger;
-        $this->token = $token;
-    }
-
     public function run(array $postData = [])
     {
         try {
@@ -52,7 +35,6 @@ class unreal4uBot implements BotsInterface
         if (!empty($update->chosen_inline_result)) {
             $this->logger->debug('We have a chosen_inline_result back, result id: '.$update->chosen_inline_result->result_id);
         }
-
 
         if (!empty($update->inline_query)) {
             $this->inlineQuery($update);
@@ -147,7 +129,7 @@ class unreal4uBot implements BotsInterface
             $this->logger->error('Problem downloading sticker: '.$e->getMessage());
             $sendMessage->text = sprintf('There was a problem downloading your sticker, please retry later');
         }
-        
+
         try {
             $tgLog->performApiRequest($sendMessage);
             $this->logger->debug('Sent message to user');

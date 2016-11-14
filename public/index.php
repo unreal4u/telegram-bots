@@ -1,13 +1,11 @@
 <?php
 
+declare(strict_types = 1);
+
 include('../src/common.php');
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use unreal4u\TelegramAPI\Telegram\Types\Update;
-use unreal4u\TelegramAPI\Telegram\Types\InlineQueryResultArticle;
-use unreal4u\TelegramAPI\Telegram\Methods\AnswerInlineQuery;
-use unreal4u\TelegramAPI\TgLog;
 
 $parsedRequestUri = trim($_SERVER['REQUEST_URI'], '/');
 if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
@@ -24,8 +22,9 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
     $_POST = json_decode($rest_json, true);
 
     try {
-        $completeName = 'unreal4u\\Bots\\' . $currentBot;
+        $completeName = 'unreal4u\\TelegramBots\\Bots\\' . $currentBot;
         $bot = new $completeName($logger, $parsedRequestUri);
+        $logger->debug('Incoming data', [$_POST]);
         $bot->run($_POST);
     } catch (\Exception $e) {
         $logger->addError(sprintf('Captured exception: "%s"', $e->getMessage()));

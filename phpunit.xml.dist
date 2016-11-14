@@ -1,0 +1,18 @@
+<phpunit colors="true" bootstrap="tests/bootstrap.php" strict="true">
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./src/</directory>
+        </whitelist>
+        <blacklist>
+            <directory suffix=".php">./vendor</directory>
+        </blacklist>
+    </filter>
+
+    <testsuite name="telegramBots">
+        <directory>./tests/</directory>
+    </testsuite>
+
+    <logging>
+        <!-- log type="coverage-html" target="tests/report/" charset="UTF-8" / -->
+    </logging>
+</phpunit>

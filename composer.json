@@ -9,9 +9,14 @@
         "unreal4u/telegram-api": "@dev",
         "unreal4u/localization": "@stable"
     },
+    "require-dev": {
+        "phpunit/phpunit": ">=5.2",
+        "squizlabs/php_codesniffer": "~2.3",
+        "phpunit/php-code-coverage": "~3.3"
+    },
     "autoload": {
       "psr-4": {
-        "unreal4u\\": "src"
+        "unreal4u\\TelegramBots\\": "src"
       }
     },
     "scripts": {
