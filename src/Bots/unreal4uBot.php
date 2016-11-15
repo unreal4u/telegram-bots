@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace unreal4u\TelegramBots\Bots;
 
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;

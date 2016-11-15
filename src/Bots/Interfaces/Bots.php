@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace unreal4u\TelegramBots\Bots\Interfaces;
 
 use Psr\Log\LoggerInterface;

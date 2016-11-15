@@ -1,13 +1,16 @@
 {
     "require" : {
         "php" : ">=7.0",
-        "ext-mbstring": "*",
         "ext-intl": "*",
-        "psr/log": "~1.0",
+        "ext-mbstring": "*",
+        "doctrine/orm": "^2.5",
         "monolog/monolog": "~1.17",
-        "doctrine/orm": "2.5.*",
-        "unreal4u/telegram-api": "@dev",
-        "unreal4u/localization": "@stable"
+        "psr/log": "~1.0",
+        "ramsey/uuid-doctrine": "^1.2",
+        "symfony/config": "^3.1",
+        "symfony/yaml": "^3.1",
+        "unreal4u/localization": "@stable",
+        "unreal4u/telegram-api": "@dev"
     },
     "require-dev": {
         "phpunit/phpunit": ">=5.2",

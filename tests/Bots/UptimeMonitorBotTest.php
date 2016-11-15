@@ -34,6 +34,24 @@ class UptimeMonitorBotTest extends TestCase {
         $simulatedPost = $this->bootstrap->getSimulatedPostData('start');
         $return = $this->wrapper->run($simulatedPost);
 
-        #var_dump($return);
+        $this->assertInstanceOf('unreal4u\\TelegramApi\\Telegram\\Methods\\SendMessage', $return);
+        $this->assertStringStartsWith('Welcome to the UptimeMonitorBot', $return->text);
+        $this->assertContains('The available commands are', $return->text);
+        $this->assertNotEmpty($return->chat_id);
+    }
+
+    public function testHelpCommand()
+    {
+        $this->markTestIncomplete('TODO');
+    }
+
+    public function testSetup()
+    {
+        $this->markTestIncomplete('TODO');
+    }
+
+    public function testGetNotifyUrl()
+    {
+        $this->markTestIncomplete('TODO');
     }
 }
