@@ -9,7 +9,7 @@ use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\localization;
 
-class TheTimeBot extends BotsImplementation
+class TheTimeBot extends Base
 {
     protected $command = '';
 

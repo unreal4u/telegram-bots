@@ -19,6 +19,11 @@
         "unreal4u\\TelegramBots\\": "src"
       }
     },
+    "autoload-dev": {
+      "psr-4": {
+        "unreal4u\\TelegramBots\\tests\\": "tests"
+      }
+    },
     "scripts": {
         "post-install-cmd": [
             "mkdir -p telegramApiLogs",

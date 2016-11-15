@@ -2,6 +2,7 @@
 
 namespace unreal4u\TelegramBots\Bots;
 
+use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Query\Result\Article;
@@ -10,26 +11,31 @@ use unreal4u\TelegramAPI\Telegram\Methods\AnswerInlineQuery;
 use unreal4u\TelegramAPI\Telegram\Methods\GetFile;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\TgLog;
+use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 
-class unreal4uBot extends BotsImplementation
+class unreal4uBot extends Base
 {
-    public function run(array $postData = [])
+    public function run(array $postData = []): TelegramMethods
     {
+        $method = null;
+
         try {
             $update = new Update($postData, $this->logger);
             $this->logger->debug('Incoming post data', $_POST);
-            $this->performAction($update);
+            $method = $this->performAction($update);
         } catch (\Exception $e) {
             $this->logger->error(sprintf('Captured exception: "%s"', $e->getMessage()));
         }
 
-        return $this;
+        return $method;
     }
 
-    public function performAction(Update $update)
+    public function performAction(Update $update): TelegramMethods
     {
+        $method = null;
+
         if (!empty($update->message->chat->id)) {
-            $this->handleIncomingMessage($update->message);
+            $method = $this->handleIncomingMessage($update->message);
         }
 
         if (!empty($update->chosen_inline_result)) {
@@ -37,13 +43,13 @@ class unreal4uBot extends BotsImplementation
         }
 
         if (!empty($update->inline_query)) {
-            $this->inlineQuery($update);
+            $method = $this->inlineQuery($update);
         }
 
-        return $this;
+        return $method;
     }
 
-    public function handleIncomingMessage(Message $message): unreal4uBot
+    public function handleIncomingMessage(Message $message): TelegramMethods
     {
         $this->logger->info(sprintf(
             'Received message. Chat id: %d, user id: %d, user name: %s',
@@ -53,13 +59,13 @@ class unreal4uBot extends BotsImplementation
         ));
 
         if (!empty($message->sticker->file_id)) {
-            $this->downloadSticker($message);
+            return $this->downloadSticker($message);
         }
 
-        return $this;
+        return null;
     }
 
-    public function inlineQuery(Update $update): unreal4uBot
+    public function inlineQuery(Update $update): TelegramMethods
     {
         $this->logger->info(sprintf(
             'Received inline query. User id %d (username: %s). Query: "%s", inline query id: %s',
@@ -90,19 +96,14 @@ class unreal4uBot extends BotsImplementation
         $answerInlineQuery->inline_query_id = $update->inline_query->id;
         $answerInlineQuery->addResult($inlineQueryResultArticle);
 
-        $tgLog = new TgLog($this->token, $this->logger);
-        //$tgLog->logger = $this->logger;
-        $tgLog->performApiRequest($answerInlineQuery);
-        $this->logger->info(sprintf('Sent API response to Telegram, all done'));
-
-        return $this;
+        return $answerInlineQuery;
     }
 
     /**
      * @FIXME this function name will probably change in the future!
      * This will download a file and offer it to the user
      */
-    private function downloadSticker(Message $message): unreal4uBot
+    private function downloadSticker(Message $message): TelegramMethods
     {
         $this->logger->debug(sprintf('Got a sticker request, downloading sticker'));
 
@@ -130,13 +131,6 @@ class unreal4uBot extends BotsImplementation
             $sendMessage->text = sprintf('There was a problem downloading your sticker, please retry later');
         }
 
-        try {
-            $tgLog->performApiRequest($sendMessage);
-            $this->logger->debug('Sent message to user');
-        } catch (\Exception $e) {
-            $this->logger->warning('Caught exception while trying to send message to user: ' . $e->getMessage());
-        }
-
-        return $this;
+        return $sendMessage;
     }
 }

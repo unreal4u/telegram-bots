@@ -1,14 +1,16 @@
 <?php
 
-namespace unreal4u\TelegramBots\tests\Bots\UptimeMonitorBot;
+declare(strict_types = 1);
+
+namespace unreal4u\TelegramBots\tests\Bots;
 
 use PHPUnit_Framework_TestCase as TestCase;
-use unreal4u\TelegramBots\Bots\UptimeMonitorBot;
+use unreal4u\TelegramBots\Bots\unreal4uBot;
 use unreal4u\TelegramBots\Tests\bootstrap;
 
-class UptimeMonitorBotTest extends TestCase {
+class unreal4uBotTest extends TestCase {
     /**
-     * @var UptimeMonitorBot
+     * @var unreal4uBot
      */
     private $wrapper = null;
 
@@ -23,15 +25,12 @@ class UptimeMonitorBotTest extends TestCase {
         $this->bootstrap = new bootstrap();
         $this->bootstrap->setUpLogger();
 
-        $this->wrapper = new UptimeMonitorBot($this->bootstrap->getLogger(), '123456');
+        $this->wrapper = new unreal4uBot($this->bootstrap->getLogger(), '123456');
         $this->bootstrap->setupBot($this->wrapper);
     }
 
     public function testStartCommand()
     {
-        $simulatedPost = $this->bootstrap->getSimulatedPostData('start');
-        $return = $this->wrapper->run($simulatedPost);
-
-        var_dump($return);
+        $this->markTestIncomplete('This will be implemented later on');
     }
 }

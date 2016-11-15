@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "43db76f98e58fec29a2eb12edbcbed75",
+    "hash": "bbf82ec934cc008f827c23d71cb7ba24",
     "content-hash": "ca99fa6c5f3f7873c5e662d66f92565a",
     "packages": [
         {
@@ -1177,12 +1177,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unreal4u/telegram-api.git",
-                "reference": "99c4e831f683645836e3a91d36284b69571c5ec5"
+                "reference": "0a9bbf3e3e927a9e41db23b88ce732bec6a8162a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/99c4e831f683645836e3a91d36284b69571c5ec5",
-                "reference": "99c4e831f683645836e3a91d36284b69571c5ec5",
+                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/0a9bbf3e3e927a9e41db23b88ce732bec6a8162a",
+                "reference": "0a9bbf3e3e927a9e41db23b88ce732bec6a8162a",
                 "shasum": ""
             },
             "require": {
@@ -1219,7 +1219,7 @@
                 "telegram",
                 "telegram bot"
             ],
-            "time": "2016-11-06 00:22:50"
+            "time": "2016-11-15 00:29:00"
         }
     ],
     "packages-dev": [

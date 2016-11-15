@@ -8,7 +8,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
-use unreal4u\TelegramBots\Bots\BotsImplementation;
+use unreal4u\TelegramBots\Bots\Base;
 
 class bootstrap {
     /**
@@ -21,12 +21,11 @@ class bootstrap {
      */
     private $botName = '';
 
-    public function __construct()
-    {
-        chdir(dirname(__FILE__).'/../');
-        include 'vendor/autoload.php';
-    }
-
+    /**
+     * Sets up the /dev/null logger for all tests
+     *
+     * @return bootstrap
+     */
     public function setupLogger(): bootstrap
     {
         $this->logger = new Logger('unittests');
@@ -35,7 +34,13 @@ class bootstrap {
         return $this;
     }
 
-    public function setupBot(BotsImplementation $bot): bootstrap
+    /**
+     * Sets the botname dynamically based on the given bot
+     *
+     * @param Base $bot
+     * @return bootstrap
+     */
+    public function setupBot(Base $bot): bootstrap
     {
         $reflect = new ReflectionClass($bot);
         $this->botName = $reflect->getShortName();
@@ -43,6 +48,25 @@ class bootstrap {
         return $this;
     }
 
+    /**
+     * Ability to overwrite above behaviour, only used in scenarios where we can't give a bot
+     *
+     * @see setupBot
+     * @param string $botName
+     * @return bootstrap
+     */
+    public function forceConfigurationSet(string $botName): bootstrap
+    {
+        $this->botName = $botName;
+
+        return $this;
+    }
+
+    /**
+     * Will return the /dev/null logger
+     *
+     * @return LoggerInterface
+     */
     public function getLogger(): LoggerInterface
     {
         return $this->logger;
@@ -59,3 +83,9 @@ class bootstrap {
         return json_decode($rawData, true);
     }
 }
+
+/*
+ * Hackish, but it is only a test, no need to do this for every time this class is initialized
+ */
+chdir(dirname(__FILE__).'/../');
+include 'vendor/autoload.php';

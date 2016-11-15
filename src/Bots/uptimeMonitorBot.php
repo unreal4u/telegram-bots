@@ -2,15 +2,17 @@
 
 namespace unreal4u\TelegramBots\Bots;
 
-use unreal4u\TelegramBots\Bots\Interfaces\Bots;
+use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
+use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 
-class UptimeMonitorBot extends BotsImplementation {
-    public function run(array $postData=[]): Bots
+class UptimeMonitorBot extends Base {
+    public function run(array $postData=[]): TelegramMethods
     {
         $this
             ->extractBasicInformation($postData)
         ;
 
-        return $this;
+        $sendMessage = new SendMessage();
+        return $sendMessage;
     }
 }

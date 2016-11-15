@@ -4,6 +4,7 @@ namespace unreal4u\TelegramBots\Bots\Interfaces;
 
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
+use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 
 interface Bots
 {
@@ -15,5 +16,5 @@ interface Bots
      */
     public function __construct(LoggerInterface $logger, string $token, Client $client = null);
 
-    public function run(array $postData = []): Bots;
+    public function run(array $postData = []): TelegramMethods;
 }
