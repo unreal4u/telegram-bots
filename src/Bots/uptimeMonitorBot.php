@@ -4,9 +4,13 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Bots;
 
+use Doctrine\ORM\EntityManager;
 use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramBots\DatabaseWrapper;
+use unreal4u\TelegramBots\Models\Entities\Events;
+use unreal4u\TelegramBots\Models\Entities\Monitors;
 
 class UptimeMonitorBot extends Base {
     /**
@@ -14,9 +18,15 @@ class UptimeMonitorBot extends Base {
      */
     protected $response = null;
 
+    /**
+     * @var EntityManager
+     */
+    private $db = null;
+
     public function run(array $postData=[]): TelegramMethods
     {
         $this->extractBasicInformation($postData);
+        $this->setupDatabaseSettings();
 
         $this->response = new SendMessage();
         $this->response->chat_id = $this->chatId;
@@ -39,6 +49,16 @@ class UptimeMonitorBot extends Base {
             default:
                 return $this->help();
         }
+    }
+
+    public function createNotificationMessage(Events $event, EntityManager $db): SendMessage
+    {
+        $this->db = $db;
+
+        $monitor = $db
+            ->getRepository('Monitors')
+            ->find($event->getMonitorId());
+        var_dump($monitor);
     }
 
     protected function start(): SendMessage
@@ -79,14 +99,24 @@ class UptimeMonitorBot extends Base {
         return $this->response;
     }
 
-    protected function regenerateNotifyUrl(): SendMessage
+    protected function regenerateNotifyUrl(): string
     {
         // TODO save new UUID to DB
-        return $this->getNotifyUrl();
+        $monitor = new Monitors();
+        $monitor->setNotifyUrl($this->generateNewUuid4());
+        return $monitor->getNotifyUrl();
     }
 
     private function generateNewUuid4(): string
     {
         return Uuid::uuid4()->toString();
+    }
+
+    private function setupDatabaseSettings(): UptimeMonitorBot
+    {
+        $wrapper = new DatabaseWrapper();
+        $this->db = $wrapper->getEntity();
+
+        return $this;
     }
 }

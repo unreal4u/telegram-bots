@@ -11,6 +11,7 @@ use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\TelegramBots\Bots\Interfaces\Bots;
+use unreal4u\TelegramBots\Models\Entities\Monitors;
 
 abstract class Base implements Bots {
     /**
@@ -56,6 +57,11 @@ abstract class Base implements Bots {
      * @var Update
      */
     protected $updateObject = null;
+
+    /**
+     * @var Monitors
+     */
+    protected $monitor = null;
 
     final public function __construct(LoggerInterface $logger, string $token, Client $client = null)
     {

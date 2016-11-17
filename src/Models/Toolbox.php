@@ -59,7 +59,7 @@ class Toolbox
 
     /**
      * @param string $name
-     * @return $this
+     * @return Toolbox
      */
     private function createEmptyToolbox(string $name): Toolbox
     {

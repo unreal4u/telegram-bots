@@ -3,7 +3,7 @@
 declare(strict_types = 1);
 
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
+use unreal4u\TelegramBots\DatabaseWrapper;
 
-include('Doctrine/bootstrap.php');
-
-return ConsoleRunner::createHelperSet($toolbox->getToolbox('mysqlStorage'));
+$wrapper = new DatabaseWrapper();
+return ConsoleRunner::createHelperSet($wrapper->getEntity());

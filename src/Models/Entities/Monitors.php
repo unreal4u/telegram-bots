@@ -8,7 +8,7 @@ use Ramsey\Uuid\Uuid;
 
 /**
  * @Entity
- * @Table(name="monitors")
+ * @Table(name="Monitors")
  */
 class Monitors
 {
@@ -16,13 +16,13 @@ class Monitors
 
     const TYPE_SELFCHECK = 1;
 
-     /**
-      * @var int
-      * @Id
-      * @Column(type="uuid_binary")
-      * @GeneratedValue(strategy="CUSTOM")
-      * @CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
-      */
+    /**
+     * @var int
+     * @Id
+     * @Column(type="uuid_binary")
+     * @GeneratedValue(strategy="CUSTOM")
+     * @CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
+     */
     protected $id;
 
     /**
@@ -32,8 +32,14 @@ class Monitors
     protected $chatId;
 
     /**
+     * @var int
+     * @Column(type="integer")
+     */
+    protected $userId;
+
+    /**
      * @var string
-     * @Column(type="uuid", nullable=true)
+     * @Column(type="uuid")
      */
     protected $notifyUrl;
 
@@ -45,15 +51,67 @@ class Monitors
 
     /**
      * @var string
-     * @Column(type="string")
+     * @Column(type="string", nullable=true)
      */
     protected $monitorAPIKey;
 
     /**
-     * @return int
-     * @Column(type="integer")
+     * @param int $chatId
+     * @return Monitors
      */
-    public function getId()
+    public function setChatId($chatId): Monitors
+    {
+        $this->chatId = $chatId;
+        return $this;
+    }
+
+    /**
+     * @param int $userId
+     * @return Monitors
+     */
+    public function setUserId($userId): Monitors
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
+    /**
+     * @param string $notifyUrl
+     * @return Monitors
+     */
+    public function setNotifyUrl($notifyUrl): Monitors
+    {
+        if (empty($notifyUrl)) {
+            $notifyUrl = Uuid::uuid4()->toString();
+        }
+        $this->notifyUrl = $notifyUrl;
+        return $this;
+    }
+
+    /**
+     * @param int $type
+     * @return Monitors
+     */
+    public function setType($type): Monitors
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * @param string $monitorAPIKey
+     * @return Monitors
+     */
+    public function setMonitorAPIKey($monitorAPIKey): Monitors
+    {
+        $this->monitorAPIKey = $monitorAPIKey;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getId(): string
     {
         return $this->id;
     }
@@ -61,67 +119,40 @@ class Monitors
     /**
      * @return int
      */
-    public function getChatId()
+    public function getChatId(): int
     {
         return $this->chatId;
     }
 
     /**
-     * @param int $chatId
+     * @return int
      */
-    public function setChatId($chatId)
+    public function getUserId(): int
     {
-        $this->chatId = $chatId;
+        return $this->userId;
     }
 
     /**
      * @return string
      */
-    public function getNotifyUrl()
+    public function getNotifyUrl(): string
     {
         return $this->notifyUrl;
     }
 
     /**
-     * @param string $notifyUrl
-     */
-    public function setNotifyUrl($notifyUrl)
-    {
-        if (empty($notifyUrl)) {
-            $notifyUrl = Uuid::uuid4()->toString();
-        }
-        $this->notifyUrl = $notifyUrl;
-    }
-
-    /**
      * @return int
      */
-    public function getType()
+    public function getType(): int
     {
         return $this->type;
     }
 
     /**
-     * @param int $type
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-
-    /**
      * @return string
      */
-    public function getMonitorAPIKey()
+    public function getMonitorAPIKey(): string
     {
         return $this->monitorAPIKey;
-    }
-
-    /**
-     * @param string $monitorAPIKey
-     */
-    public function setMonitorAPIKey($monitorAPIKey)
-    {
-        $this->monitorAPIKey = $monitorAPIKey;
     }
 }

@@ -8,7 +8,7 @@ use unreal4u\TelegramBots\Models\Base;
 
 /**
  * @Entity
- * @Table(name="events")
+ * @Table(name="Events")
  */
 class Events extends Base
 {
@@ -26,6 +26,13 @@ class Events extends Base
     protected $id;
 
     /**
+     * @var string
+     * @ManyToOne(targetEntity="monitors")
+     * @JoinColumn(name="monitors_id", referencedColumnName="id")
+     */
+    protected $monitorId;
+
+    /**
      * @var \DateTimeImmutable
      * @Column(type="datetime")
      */
@@ -38,10 +45,28 @@ class Events extends Base
     protected $alertType = self::ALERT_TYPE_DOWN;
 
     /**
-     * @var string
-     * @Column(type="string")
+     * @var int
+     * @Column(type="integer", nullable=true)
      */
-    protected $monitorId;
+    protected $urMonitorId;
+
+    /**
+     * @var string
+     * @Column(type="string", nullable=true)
+     */
+    protected $urMonitorUrl;
+
+    /**
+     * @var string
+     * @Column(type="string", nullable=true)
+     */
+    protected $urMonitorFriendlyUrl;
+
+    /**
+     * @var string
+     * @Column(type="string", nullable=true)
+     */
+    protected $urAlertDetails;
 
     /**
      * @var bool
@@ -50,35 +75,83 @@ class Events extends Base
     protected $isNotified = false;
 
     /**
-     * @param int $id
+     * @param string $id
+     * @return Events
      */
-    public function setId(string $id)
+    public function setId(string $id): Events
     {
         $this->id = $id;
+        return $this;
     }
 
     /**
      * @param \DateTimeImmutable $eventTime
+     * @return Events
      */
-    public function setEventTime(\DateTimeImmutable $eventTime)
+    public function setEventTime(\DateTimeImmutable $eventTime): Events
     {
         $this->eventTime = $eventTime;
+        return $this;
     }
 
     /**
      * @param int $alertType
+     * @return Events
      */
-    public function setAlertType($alertType)
+    public function setAlertType($alertType): Events
     {
         $this->alertType = $alertType;
+        return $this;
+    }
+
+    /**
+     * @param int $urMonitorId
+     * @return Events
+     */
+    public function setUrMonitorId($urMonitorId): Events
+    {
+        $this->urMonitorId = $urMonitorId;
+        return $this;
+    }
+
+    /**
+     * @param string $urMonitorUrl
+     * @return Events
+     */
+    public function setUrMonitorUrl($urMonitorUrl): Events
+    {
+        $this->urMonitorUrl = $urMonitorUrl;
+        return $this;
+    }
+
+    /**
+     * @param string $urMonitorFriendlyUrl
+     * @return Events
+     */
+    public function setUrMonitorFriendlyUrl($urMonitorFriendlyUrl): Events
+    {
+        $this->urMonitorFriendlyUrl = $urMonitorFriendlyUrl;
+        return $this;
+    }
+
+    /**
+     * @param string $urAlertDetails
+     * @return Events
+     */
+    public function setUrAlertDetails($urAlertDetails): Events
+    {
+        $this->urAlertDetails = $urAlertDetails;
+        return $this;
     }
 
     /**
      * @param string $monitorId
+     * @return Events
      */
-    public function setMonitorId(string $monitorId)
+    public function setMonitorId(string $monitorId): Events
     {
         $this->monitorId = $monitorId;
+        return $this;
     }
 
     /**
@@ -118,9 +191,41 @@ class Events extends Base
     /**
      * @return string
      */
-    public function getMonitorId()
+    public function getMonitorId(): string
     {
         return $this->monitorId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUrMonitorId(): int
+    {
+        return $this->urMonitorId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrMonitorUrl(): string
+    {
+        return $this->urMonitorUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrMonitorFriendlyUrl(): string
+    {
+        return $this->urMonitorFriendlyUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrAlertDetails(): string
+    {
+        return $this->urAlertDetails;
     }
 
     /**
