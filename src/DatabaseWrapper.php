@@ -15,7 +15,7 @@ class DatabaseWrapper {
      * Will initialize an EntityManager and return that
      *
      * @return EntityManager
-     * @throws Models\Exceptions\DriverNotFound
+     * @throws \unreal4u\TelegramBots\Exceptions\Database\DriverNotFound
      */
     public function getEntity(): EntityManager
     {

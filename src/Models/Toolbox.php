@@ -7,8 +7,8 @@ namespace unreal4u\TelegramBots\Models;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
-use unreal4u\TelegramBots\Models\Exceptions\DriverAlreadyDefined;
-use unreal4u\TelegramBots\Models\Exceptions\DriverNotFound;
+use unreal4u\TelegramBots\Exceptions\Database\DriverAlreadyDefined;
+use unreal4u\TelegramBots\Exceptions\Database\DriverNotFound;
 
 class Toolbox
 {

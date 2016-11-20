@@ -17,7 +17,7 @@ class Monitors
     const TYPE_SELFCHECK = 1;
 
     /**
-     * @var int
+     * @var string
      * @Id
      * @Column(type="uuid_binary")
      * @GeneratedValue(strategy="CUSTOM")
@@ -53,7 +53,7 @@ class Monitors
      * @var string
      * @Column(type="string", nullable=true)
      */
-    protected $monitorAPIKey;
+    protected $monitorAPIKey = null;
 
     /**
      * @param int $chatId

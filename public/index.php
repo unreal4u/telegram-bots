@@ -26,8 +26,8 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
         /** @var $bot \unreal4u\TelegramBots\Bots\Base */
         $bot = new $completeName($logger, $parsedRequestUri);
         $logger->debug('Incoming data', [$_POST]);
-        $response = $bot->run($_POST);
-        $bot->sendResponseBack($response);
+        $response = $bot->createAnswer($_POST);
+        $bot->sendResponse($response);
     } catch (\Exception $e) {
         $logger->addError(sprintf('Captured exception: "%s"', $e->getMessage()));
     }

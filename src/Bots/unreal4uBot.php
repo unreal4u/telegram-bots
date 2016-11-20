@@ -13,11 +13,10 @@ use unreal4u\TelegramAPI\Telegram\Methods\AnswerInlineQuery;
 use unreal4u\TelegramAPI\Telegram\Methods\GetFile;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\TgLog;
-use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 
 class unreal4uBot extends Base
 {
-    public function run(array $postData = []): TelegramMethods
+    public function createAnswer(array $postData = []): TelegramMethods
     {
         $method = null;
 

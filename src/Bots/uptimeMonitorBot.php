@@ -4,33 +4,18 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Bots;
 
-use Doctrine\ORM\EntityManager;
 use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
-use unreal4u\TelegramBots\DatabaseWrapper;
 use unreal4u\TelegramBots\Models\Entities\Events;
 use unreal4u\TelegramBots\Models\Entities\Monitors;
 
 class UptimeMonitorBot extends Base {
-    /**
-     * @var SendMessage
-     */
-    protected $response = null;
-
-    /**
-     * @var EntityManager
-     */
-    private $db = null;
-
-    public function run(array $postData=[]): TelegramMethods
+    public function createAnswer(array $postData=[]): TelegramMethods
     {
         $this->extractBasicInformation($postData);
+        // Database connections are mandatory for all operations on this bot
         $this->setupDatabaseSettings();
-
-        $this->response = new SendMessage();
-        $this->response->chat_id = $this->chatId;
-        $this->response->reply_to_message_id = $this->updateObject->message->message_id;
 
         switch ($this->action) {
             case 'start':
@@ -51,14 +36,20 @@ class UptimeMonitorBot extends Base {
         }
     }
 
-    public function createNotificationMessage(Events $event, EntityManager $db): SendMessage
+    public function createNotificationMessage(Events $event): SendMessage
     {
-        $this->db = $db;
-
-        $monitor = $db
+        $monitor = $this->db
             ->getRepository('Monitors')
             ->find($event->getMonitorId());
-        var_dump($monitor);
+
+        if (!empty($monitor)) {
+            $this->response->text = sprintf(
+                'According to monitor %s for %s, you site is currently %s',
+                '[MONITOR]',
+                '[SITE]',
+                '[STATUS]'
+            );
+        }
     }
 
     protected function start(): SendMessage
@@ -67,8 +58,18 @@ class UptimeMonitorBot extends Base {
             _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down!%s'),
             PHP_EOL
         );
-        // Complete with the text from the help page
-        $this->help();
+
+        $monitor = $this->db
+            ->getRepository('Monitors')
+            ->findOneBy(['userId' => $this->userId, 'chatId' => $this->chatId])
+        ;
+
+        if (empty($monitor)) {
+            $this->getNotifyUrl();
+        } else {
+            // Complete with the text from the help page
+            $this->help();
+        }
         return $this->response;
     }
 
@@ -92,31 +93,26 @@ class UptimeMonitorBot extends Base {
     {
         // TODO get UUID from DB
         if (empty($uuid)) {
-            $uuid = $this->generateNewUuid4();
+            $uuid = $this->regenerateNotifyUrl();
         }
 
-        $this->response->text = 'Fill in the following url in the box: `https://telegram.unreal4u.com/UptimeMonitorBot/'.$uuid.'?`';
+        $this->response->text .= 'Fill in the following url in the box: `https://telegram.unreal4u.com/UptimeMonitorBot/'.$uuid.'?`';
         return $this->response;
     }
 
-    protected function regenerateNotifyUrl(): string
+    /**
+     * Will generate a new monitorId in our database
+     *
+     * @return string
+     */
+    private function regenerateNotifyUrl(): string
     {
-        // TODO save new UUID to DB
         $monitor = new Monitors();
-        $monitor->setNotifyUrl($this->generateNewUuid4());
+        $monitor->setNotifyUrl(Uuid::uuid4()->toString());
+        $monitor->setChatId($this->chatId);
+        $monitor->setUserId($this->userId);
+        $this->db->persist($monitor);
+        $this->db->flush();
         return $monitor->getNotifyUrl();
-    }
-
-    private function generateNewUuid4(): string
-    {
-        return Uuid::uuid4()->toString();
-    }
-
-    private function setupDatabaseSettings(): UptimeMonitorBot
-    {
-        $wrapper = new DatabaseWrapper();
-        $this->db = $wrapper->getEntity();
-
-        return $this;
     }
 }

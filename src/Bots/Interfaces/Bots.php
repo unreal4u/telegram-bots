@@ -18,5 +18,5 @@ interface Bots
      */
     public function __construct(LoggerInterface $logger, string $token, Client $client = null);
 
-    public function run(array $postData = []): TelegramMethods;
+    public function createAnswer(array $postData = []): TelegramMethods;
 }

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Models\Entities;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use unreal4u\TelegramBots\Models\Base;
 
 /**
@@ -17,7 +18,7 @@ class Events extends Base
     const ALERT_TYPE_UP = 2;
 
     /**
-     * @var int
+     * @var string
      * @Id
      * @Column(type="uuid_binary")
      * @GeneratedValue(strategy="CUSTOM")
@@ -28,7 +29,7 @@ class Events extends Base
     /**
      * @var string
      * @ManyToOne(targetEntity="monitors")
-     * @JoinColumn(name="monitors_id", referencedColumnName="id")
+     * @JoinColumn(referencedColumnName="id")
      */
     protected $monitorId;
 
@@ -73,6 +74,11 @@ class Events extends Base
      * @Column(type="boolean")
      */
     protected $isNotified = false;
+
+    public function __construct()
+    {
+        $this->monitorId = new ArrayCollection();
+    }
 
     /**
      * @param string $id

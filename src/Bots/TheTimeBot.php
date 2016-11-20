@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Bots;
 
+use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
 use unreal4u\TelegramAPI\Telegram\Types\Chat;
@@ -17,7 +18,7 @@ class TheTimeBot extends Base
 
     protected $arguments = '';
 
-    public function run(array $postData=[]): Bots
+    public function createAnswer(array $postData=[]): TelegramMethods
     {
         $update = new Update($postData, $this->logger);
         $this->logger->debug('Incoming data', $postData);
@@ -144,7 +145,6 @@ class TheTimeBot extends Base
     protected function getTheTime(): string
     {
         $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->arguments));
-        $theTime = '';
 
         $localization = new localization();
         $acceptedTimezone = $localization->setTimezone($this->arguments);

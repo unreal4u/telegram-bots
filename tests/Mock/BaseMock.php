@@ -13,7 +13,7 @@ use unreal4u\TelegramBots\Bots\Base;
  */
 class BaseMock extends Base
 {
-    public function run(array $postData = []): TelegramMethods
+    public function createAnswer(array $postData = []): TelegramMethods
     {
         // TODO: Implement run() method.
     }
