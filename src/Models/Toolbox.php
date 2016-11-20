@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Models;
 
+use Doctrine\Common\Cache\RedisCache;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
@@ -101,14 +102,29 @@ class Toolbox
     {
         $driverSettings = $this->toolbox[$name];
 
+        $beginTime = microtime(true);
         foreach ($driverSettings['types'] as $type => $className) {
             Type::addType($type, $className);
         }
+        var_dump(microtime(true) - $beginTime, $this->developmentMode);
+
+        $redis = new \Redis();
+        $redis->connect('localhost', 6379);
+
+        $cacheImplementation = new RedisCache();
+        $cacheImplementation->setRedis($redis);
 
         $configuration = Setup::createAnnotationMetadataConfiguration([__DIR__.'/Entities'], $this->developmentMode);
+        $configuration->setMetadataCacheImpl($cacheImplementation);
+        $configuration->setQueryCacheImpl($cacheImplementation);
+        $configuration->setResultCacheImpl($cacheImplementation);
         $configuration->addEntityNamespace($entityNamespace, __NAMESPACE__.'\\Entities');
+
+        var_dump(microtime(true) - $beginTime);
         $this->toolbox[$name]['initialized'] = true;
 
-        return EntityManager::create($this->toolbox[$name]['parameters'], $configuration);
+        $entityManager = EntityManager::create($this->toolbox[$name]['parameters'], $configuration);
+        var_dump(microtime(true) - $beginTime);
+        return $entityManager;
     }
 }

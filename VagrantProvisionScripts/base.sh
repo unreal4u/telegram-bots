@@ -4,7 +4,7 @@ echo "[PROVISION] Installing epel and other basic stuff"
 yum install -q -y epel-release firewalld deltarpm
 # Enable installation after epel is installed
 echo "[PROVISION] Installing additional software"
-yum install -q -y lynx ntp vim-enhanced wget unzip git nginx mariadb-server
+yum install -q -y lynx ntp vim-enhanced wget unzip git nginx mariadb-server redis
 
 echo "[PROVISION] Enabling basic services"
 # Enable services
@@ -32,6 +32,7 @@ yum install -q -y \
   php${PHP_VERSION}-php-process \
   php${PHP_VERSION}-php-pecl-xdebug \
   php${PHP_VERSION}-php-pecl-zip \
+  php${PHP_VERSION}-php-pecl-redis \
   php${PHP_VERSION}-php-dbg
 ln -s /usr/bin/php${PHP_VERSION} /usr/bin/php
 ln -s /usr/bin/php${PHP_VERSION}-phpdbg /usr/bin/phpdbg
@@ -65,8 +66,8 @@ firewall-cmd --zone=public --add-port 3306/tcp
 firewall-cmd --zone=public --add-port 3306/tcp --permanent
 
 echo "[PROVISION] Enabling services"
-systemctl enable php${PHP_VERSION}-php-fpm nginx mariadb
-systemctl start php${PHP_VERSION}-php-fpm nginx mariadb
+systemctl enable php${PHP_VERSION}-php-fpm nginx mariadb redis
+systemctl start php${PHP_VERSION}-php-fpm nginx mariadb redis
 
 echo "[PROVISION] Setting MariaDB up"
 mysql -uroot < /home/vagrant/userrights.sql
@@ -74,3 +75,5 @@ mysql -uroot < /home/vagrant/userrights.sql
 echo "[PROVISION] Cleaning up"
 rm -f /home/vagrant/userrights.sql
 rm -f /root/phpfpm-access-to-shared-folder.*
+
+echo "Provision completed on $(date +%F) $(date +%T)" > /home/vagrant/last-provision

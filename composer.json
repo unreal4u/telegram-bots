@@ -3,6 +3,7 @@
     "php": ">=7.0",
     "ext-intl": "*",
     "ext-mbstring": "*",
+    "ext-redis": "*",
     "doctrine/orm": "^2.5",
     "monolog/monolog": "~1.17",
     "psr/log": "~1.0",

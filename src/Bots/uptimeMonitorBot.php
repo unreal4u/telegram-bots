@@ -75,12 +75,10 @@ class UptimeMonitorBot extends Base {
         );
 
         $beginningTime = microtime(true);
-        var_dump(microtime(true));
         $this->monitor = $this->db
-            ->getRepository('uptimeMonitorBot:Monitors')
+            ->getRepository('UptimeMonitorBot:Monitors')
             ->findOneBy(['userId' => $this->userId, 'chatId' => $this->chatId])
         ;
-        var_dump(microtime(true));
         var_dump(microtime(true) - $beginningTime);
 
         if (empty($this->monitor)) {
