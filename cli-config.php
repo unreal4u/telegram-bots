@@ -6,4 +6,4 @@ use Doctrine\ORM\Tools\Console\ConsoleRunner;
 use unreal4u\TelegramBots\DatabaseWrapper;
 
 $wrapper = new DatabaseWrapper();
-return ConsoleRunner::createHelperSet($wrapper->getEntity());
+return ConsoleRunner::createHelperSet($wrapper->getEntity('UptimeMonitorBot'));

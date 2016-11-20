@@ -1,36 +1,36 @@
 {
-    "require" : {
-        "php" : ">=7.0",
-        "ext-intl": "*",
-        "ext-mbstring": "*",
-        "doctrine/orm": "^2.5",
-        "monolog/monolog": "~1.17",
-        "psr/log": "~1.0",
-        "ramsey/uuid-doctrine": "^1.2",
-        "symfony/config": "^3.1",
-        "symfony/yaml": "^3.1",
-        "unreal4u/localization": "@stable",
-        "unreal4u/telegram-api": "@dev"
-    },
-    "require-dev": {
-        "phpunit/phpunit": ">=5.2",
-        "squizlabs/php_codesniffer": "~2.3",
-        "phpunit/php-code-coverage": "~3.3"
-    },
-    "autoload": {
-      "psr-4": {
-        "unreal4u\\TelegramBots\\": "src"
-      }
-    },
-    "autoload-dev": {
-      "psr-4": {
-        "unreal4u\\TelegramBots\\tests\\": "tests"
-      }
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "mkdir -p telegramApiLogs",
-            "chmod 777 telegramApiLogs"
-        ]
+  "require": {
+    "php": ">=7.0",
+    "ext-intl": "*",
+    "ext-mbstring": "*",
+    "doctrine/orm": "^2.5",
+    "monolog/monolog": "~1.17",
+    "psr/log": "~1.0",
+    "ramsey/uuid-doctrine": "^1.2",
+    "symfony/config": "^3.1",
+    "symfony/yaml": "^3.1",
+    "unreal4u/localization": "@stable",
+    "unreal4u/telegram-api": "@dev"
+  },
+  "require-dev": {
+    "phpunit/phpunit": ">=5.2",
+    "squizlabs/php_codesniffer": "~2.3",
+    "phpunit/php-code-coverage": "~3.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "unreal4u\\TelegramBots\\": "src"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "unreal4u\\TelegramBots\\tests\\": "tests"
+    }
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "mkdir -p telegramApiLogs",
+      "chmod 777 telegramApiLogs"
+    ]
+  }
 }

@@ -8,7 +8,14 @@ use Ramsey\Uuid\Uuid;
 
 /**
  * @Entity
- * @Table(name="Monitors")
+ * @Table(name="Monitors",
+ *     indexes={
+ *          @Index(name="K_userId", columns={"userId"}),
+ *          @Index(name="K_chatId", columns={"chatId"})
+ *     },
+ *     uniqueConstraints=
+ *       {@UniqueConstraint(name="UK_ChatUserId", columns={"userId", "chatId"})}
+ * )
  */
 class Monitors
 {
@@ -38,7 +45,7 @@ class Monitors
     protected $userId;
 
     /**
-     * @var string
+     * @var Uuid
      * @Column(type="uuid")
      */
     protected $notifyUrl;
@@ -137,7 +144,7 @@ class Monitors
      */
     public function getNotifyUrl(): string
     {
-        return $this->notifyUrl;
+        return (string)$this->notifyUrl;
     }
 
     /**

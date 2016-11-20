@@ -32,7 +32,7 @@ class UptimeMonitorBotTest extends TestCase {
     public function testStartCommand()
     {
         $simulatedPost = $this->bootstrap->getSimulatedPostData('start');
-        $return = $this->wrapper->run($simulatedPost);
+        $return = $this->wrapper->createAnswer($simulatedPost);
 
         $this->assertInstanceOf('unreal4u\\TelegramApi\\Telegram\\Methods\\SendMessage', $return);
         $this->assertStringStartsWith('Welcome to the UptimeMonitorBot', $return->text);

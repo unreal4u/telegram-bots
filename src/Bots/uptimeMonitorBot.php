@@ -11,11 +11,21 @@ use unreal4u\TelegramBots\Models\Entities\Events;
 use unreal4u\TelegramBots\Models\Entities\Monitors;
 
 class UptimeMonitorBot extends Base {
+    /**
+     * The base url on which this bot will be listening for events
+     */
+    const botBaseUrl = 'https://telegram.unreal4u.com/UptimeMonitorBot/';
+
+    /**
+     * @var Monitors
+     */
+    private $monitor = null;
+
     public function createAnswer(array $postData=[]): TelegramMethods
     {
         $this->extractBasicInformation($postData);
         // Database connections are mandatory for all operations on this bot
-        $this->setupDatabaseSettings();
+        $this->setupDatabaseSettings('UptimeMonitorBot');
 
         switch ($this->action) {
             case 'start':
@@ -39,7 +49,7 @@ class UptimeMonitorBot extends Base {
     public function createNotificationMessage(Events $event): SendMessage
     {
         $monitor = $this->db
-            ->getRepository('Monitors')
+            ->getRepository('uptimeMonitorBot:Monitors')
             ->find($event->getMonitorId());
 
         if (!empty($monitor)) {
@@ -52,6 +62,11 @@ class UptimeMonitorBot extends Base {
         }
     }
 
+    /**
+     * Execution of this command
+     *
+     * @return SendMessage
+     */
     protected function start(): SendMessage
     {
         $this->response->text = sprintf(
@@ -59,12 +74,16 @@ class UptimeMonitorBot extends Base {
             PHP_EOL
         );
 
-        $monitor = $this->db
-            ->getRepository('Monitors')
+        $beginningTime = microtime(true);
+        var_dump(microtime(true));
+        $this->monitor = $this->db
+            ->getRepository('uptimeMonitorBot:Monitors')
             ->findOneBy(['userId' => $this->userId, 'chatId' => $this->chatId])
         ;
+        var_dump(microtime(true));
+        var_dump(microtime(true) - $beginningTime);
 
-        if (empty($monitor)) {
+        if (empty($this->monitor)) {
             $this->getNotifyUrl();
         } else {
             // Complete with the text from the help page
@@ -75,7 +94,8 @@ class UptimeMonitorBot extends Base {
 
     protected function help(): SendMessage
     {
-        $messageText  = _('The available commands are: ').PHP_EOL;
+        $messageText  = _(sprintf('Your notifyUrl is: %s', self::botBaseUrl.$this->monitor->getNotifyUrl())).PHP_EOL;
+        $messageText .= _('The available commands are: ').PHP_EOL;
         $messageText .= _('`setup`: Guides you through the setup of a new monitor').PHP_EOL;
         $messageText .= _('`get_notify_url`: Will return the callback url to be filled in in https://uptimerobot.com');
 
@@ -107,12 +127,12 @@ class UptimeMonitorBot extends Base {
      */
     private function regenerateNotifyUrl(): string
     {
-        $monitor = new Monitors();
-        $monitor->setNotifyUrl(Uuid::uuid4()->toString());
-        $monitor->setChatId($this->chatId);
-        $monitor->setUserId($this->userId);
-        $this->db->persist($monitor);
+        $this->monitor = new Monitors();
+        $this->monitor->setNotifyUrl(Uuid::uuid4()->toString());
+        $this->monitor->setChatId($this->chatId);
+        $this->monitor->setUserId($this->userId);
+        $this->db->persist($this->monitor);
         $this->db->flush();
-        return $monitor->getNotifyUrl();
+        return $this->monitor->getNotifyUrl();
     }
 }

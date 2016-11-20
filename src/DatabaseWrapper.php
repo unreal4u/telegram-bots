@@ -14,10 +14,11 @@ class DatabaseWrapper {
     /**
      * Will initialize an EntityManager and return that
      *
+     * @param string $entityNamespace
      * @return EntityManager
      * @throws \unreal4u\TelegramBots\Exceptions\Database\DriverNotFound
      */
-    public function getEntity(): EntityManager
+    public function getEntity(string $entityNamespace): EntityManager
     {
         $finalConfiguration = $this->getFinalConfiguration();
 
@@ -31,7 +32,7 @@ class DatabaseWrapper {
             'default_table_options' => $finalConfiguration['mysql']['default_table_options'],
         ], $finalConfiguration['mysql']['extra_types']);
 
-        return $toolbox->getToolbox('mysqlStorage');
+        return $toolbox->getToolbox('mysqlStorage', $entityNamespace);
     }
 
     /**

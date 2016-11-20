@@ -14,7 +14,6 @@ use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 use unreal4u\TelegramBots\DatabaseWrapper;
-use unreal4u\TelegramBots\Models\Entities\Monitors;
 
 abstract class Base implements Bots {
     /**
@@ -60,11 +59,6 @@ abstract class Base implements Bots {
      * @var Update
      */
     protected $updateObject = null;
-
-    /**
-     * @var Monitors
-     */
-    protected $monitor = null;
 
     /**
      * @var EntityManager
@@ -143,12 +137,13 @@ abstract class Base implements Bots {
     /**
      * Sets up the database settings for the current bot
      *
+     * @param string $entityNamespace
      * @return Base
      */
-    final protected function setupDatabaseSettings(): Base
+    final protected function setupDatabaseSettings(string $entityNamespace): Base
     {
         $wrapper = new DatabaseWrapper();
-        $this->db = $wrapper->getEntity();
+        $this->db = $wrapper->getEntity($entityNamespace);
 
         return $this;
     }
