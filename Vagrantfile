@@ -18,6 +18,7 @@ Vagrant.configure(2) do |config|
     # Enable specific folders, it helps if you have installed the vagrant-vbguests plugin :)
     config.vm.synced_folder ".", "/vagrant", type: "virtualbox", mount_options: ["dmode=777", "fmode=666"]
     config.vm.synced_folder "vendor/", "/vagrant/vendor/", type: "virtualbox", mount_options: ["dmode=755", "fmode=644"]
+    config.vm.synced_folder "telegramApiLogs", "/vagrant/vendor/telegramApiLogs", type: "virtualbox", mount_options: ["dmode=755", "fmode=666"]
 
     # For slow host machines, like mine :(
     config.vm.boot_timeout = 500
@@ -29,6 +30,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision "file", source: "VagrantProvisionScripts/php-fpm-telegram.conf", destination: "/home/vagrant/php-fpm-telegram.conf"
     config.vm.provision "file", source: "VagrantProvisionScripts/nginx-telegram.conf", destination: "/home/vagrant/nginx-telegram.conf"
     config.vm.provision "file", source: "VagrantProvisionScripts/phpfpm-access-to-shared-folder.te", destination: "/home/vagrant/phpfpm-access-to-shared-folder.te"
+    config.vm.provision "file", source: "VagrantProvisionScripts/phpfpm-access-to-write-logs.te", destination: "/home/vagrant/phpfpm-access-to-write-logs.te"
     config.vm.provision "file", source: "VagrantProvisionScripts/userrights.sql", destination: "/home/vagrant/userrights.sql"
     # Invoke the installation itself
     config.vm.provision :shell, path: "VagrantProvisionScripts/base.sh"

@@ -57,11 +57,15 @@ mv /home/vagrant/phpfpm-access-to-shared-folder.te /root/
 checkmodule -M -m -o /root/phpfpm-access-to-shared-folder.mod /root/phpfpm-access-to-shared-folder.te
 semodule_package -o /root/phpfpm-access-to-shared-folder.pp -m /root/phpfpm-access-to-shared-folder.mod
 semodule -i /root/phpfpm-access-to-shared-folder.pp
+mv /home/vagrant/phpfpm-access-to-write-logs.te /root/
+checkmodule -M -m -o /root/phpfpm-access-to-write-logs.mod /root/phpfpm-access-to-write-logs.te
+semodule_package -o /root/phpfpm-access-to-write-logs.pp -m /root/phpfpm-access-to-write-logs.mod
+semodule -i /root/phpfpm-access-to-write-logs.pp
 
 echo "[PROVISION] Opening up firewall"
 firewall-cmd --zone=public --add-service http
 firewall-cmd --zone=public --add-service http --permanent
-# Open up for development purposes
+# Open up for development purposes, don't do this IRL!!
 firewall-cmd --zone=public --add-port 3306/tcp
 firewall-cmd --zone=public --add-port 3306/tcp --permanent
 
@@ -74,6 +78,6 @@ mysql -uroot < /home/vagrant/userrights.sql
 
 echo "[PROVISION] Cleaning up"
 rm -f /home/vagrant/userrights.sql
-rm -f /root/phpfpm-access-to-shared-folder.*
+rm -f /root/phpfpm-access-to-*
 
 echo "Provision completed on $(date +%F) $(date +%T)" > /home/vagrant/last-provision

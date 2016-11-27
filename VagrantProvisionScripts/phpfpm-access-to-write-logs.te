@@ -1,0 +1,17 @@
+
+module phpfpmallowwritelogs 1.0;
+
+require {
+    type httpd_t;
+    type vmblock_t;
+    class dir write;
+    class file append;
+    class dir { write add_name };
+    class file { create append };
+}
+
+#============= httpd_t ==============
+allow httpd_t vmblock_t:dir write;
+allow httpd_t vmblock_t:dir add_name;
+allow httpd_t vmblock_t:file create;
+allow httpd_t vmblock_t:file append;
