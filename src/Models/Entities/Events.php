@@ -4,12 +4,14 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Models\Entities;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use unreal4u\TelegramBots\Models\Base;
 
 /**
  * @Entity
- * @Table(name="Events")
+ * @Table(name="Events",
+ *     indexes={
+ *         @Index(name="K_urMonitorId", columns={"urMonitorId"}))
+ *     }
  */
 class Events extends Base
 {
@@ -27,7 +29,7 @@ class Events extends Base
     protected $id;
 
     /**
-     * @var string
+     * @var Monitors
      * @ManyToOne(targetEntity="monitors")
      * @JoinColumn(referencedColumnName="id")
      */
@@ -70,14 +72,36 @@ class Events extends Base
     protected $urAlertDetails;
 
     /**
+     * @var \DateTimeImmutable
+     * @Column(type="datetime", nullable=true)
+     */
+    protected $urAlertDateTime = null;
+
+    /**
      * @var bool
      * @Column(type="boolean")
      */
     protected $isNotified = false;
 
+    /**
+     * The message id of the previous message (to be able to reply to it)
+     *
+     * @var int
+     * @Column(type="integer")
+     */
+    protected $telegramMessageId = 0;
+
+    /**
+     * Raw data as we received it from the uptime monitor. Useful for debugging
+     *
+     * @var string
+     * @Column(type="string", nullable=true)
+     */
+    protected $rawData = '';
+
     public function __construct()
     {
-        $this->monitorId = new ArrayCollection();
+        #$this->monitorId = new ArrayCollection();
     }
 
     /**
@@ -91,12 +115,11 @@ class Events extends Base
     }
 
     /**
-     * @param \DateTimeImmutable $eventTime
      * @return Events
      */
-    public function setEventTime(\DateTimeImmutable $eventTime): Events
+    public function setEventTime(): Events
     {
-        $this->eventTime = $eventTime;
+        $this->eventTime = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
         return $this;
     }
 
@@ -104,7 +127,7 @@ class Events extends Base
      * @param int $alertType
      * @return Events
      */
-    public function setAlertType($alertType): Events
+    public function setAlertType(int $alertType): Events
     {
         $this->alertType = $alertType;
         return $this;
@@ -114,7 +137,7 @@ class Events extends Base
      * @param int $urMonitorId
      * @return Events
      */
-    public function setUrMonitorId($urMonitorId): Events
+    public function setUrMonitorId(int $urMonitorId): Events
     {
         $this->urMonitorId = $urMonitorId;
         return $this;
@@ -124,7 +147,7 @@ class Events extends Base
      * @param string $urMonitorUrl
      * @return Events
      */
-    public function setUrMonitorUrl($urMonitorUrl): Events
+    public function setUrMonitorUrl(string $urMonitorUrl): Events
     {
         $this->urMonitorUrl = $urMonitorUrl;
         return $this;
@@ -134,7 +157,7 @@ class Events extends Base
      * @param string $urMonitorFriendlyUrl
      * @return Events
      */
-    public function setUrMonitorFriendlyUrl($urMonitorFriendlyUrl): Events
+    public function setUrMonitorFriendlyUrl(string $urMonitorFriendlyUrl): Events
     {
         $this->urMonitorFriendlyUrl = $urMonitorFriendlyUrl;
         return $this;
@@ -144,30 +167,66 @@ class Events extends Base
      * @param string $urAlertDetails
      * @return Events
      */
-    public function setUrAlertDetails($urAlertDetails): Events
+    public function setUrAlertDetails(string $urAlertDetails): Events
     {
         $this->urAlertDetails = $urAlertDetails;
         return $this;
     }
 
     /**
-     * @param string $monitorId
+     * Receives a timestamp and saves it as a DateTimeImmutable object
+     *
+     * @param int $urAlertDateTime
      * @return Events
      */
-    public function setMonitorId(string $monitorId): Events
+    public function setUrAlertTime(int $urAlertDateTime): Events
     {
-        $this->monitorId = $monitorId;
+        $urAlertTime = new \DateTime();
+        $urAlertTime->setTimestamp($urAlertDateTime);
+        $urAlertTime->setTimezone(new \DateTimeZone('UTC'));
+
+        $this->urAlertDateTime = \DateTimeImmutable::createFromMutable($urAlertTime);
         return $this;
     }
 
     /**
-     * @param boolean $isNotified
+     * @param Monitors $monitorId
+     * @return Events
+     */
+    public function setMonitorId(Monitors $monitor): Events
+    {
+        $this->monitorId = $monitor;
+        return $this;
+    }
+
+    /**
+     * @param bool $isNotified
      * @return bool
      */
-    public function setIsNotified($isNotified): bool
+    public function setIsNotified(bool $isNotified): bool
     {
         $this->isNotified = $isNotified;
         return $this->isIsNotified();
+    }
+
+    /**
+     * @param string $rawData
+     * @return Events
+     */
+    public function setRawData(string $rawData = ''): Events
+    {
+        $this->rawData = $rawData;
+        return $this;
+    }
+
+    /**
+     * @param int $telegramMessageId
+     * @return Events
+     */
+    public function setTelegramMessageId(int $telegramMessageId): Events
+    {
+        $this->telegramMessageId = $telegramMessageId;
+        return $this;
     }
 
     /**
@@ -199,7 +258,7 @@ class Events extends Base
      */
     public function getMonitorId(): string
     {
-        return $this->monitorId;
+        return $this->monitorId->getId();
     }
 
     /**
@@ -235,10 +294,34 @@ class Events extends Base
     }
 
     /**
+     * @return \DateTimeImmutable
+     */
+    public function getUrAlertTime(): \DateTimeImmutable
+    {
+        return $this->urAlertDateTime;
+    }
+
+    /**
      * @return boolean
      */
     public function isIsNotified(): bool
     {
         return $this->isNotified;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRawData(): string
+    {
+        return $this->rawData;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTelegramMessageId(): int
+    {
+        return $this->telegramMessageId;
     }
 }

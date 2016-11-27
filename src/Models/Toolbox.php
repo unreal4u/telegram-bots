@@ -112,7 +112,7 @@ class Toolbox
         ##var_dump('Begin: '.(string)(microtime(true) - $beginTime));
 
         $redis = new \Redis();
-        $redis->connect('localhost', 6379);
+        $redis->connect('127.0.0.1');
         ##var_dump('R1: '.(string)(microtime(true) - $beginTime));
         # Typical time taken up until R1: 0.02060
 

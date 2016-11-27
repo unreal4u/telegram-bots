@@ -62,6 +62,9 @@ checkmodule -M -m -o /root/phpfpm-access-to-write-logs.mod /root/phpfpm-access-t
 semodule_package -o /root/phpfpm-access-to-write-logs.pp -m /root/phpfpm-access-to-write-logs.mod
 semodule -i /root/phpfpm-access-to-write-logs.pp
 
+echo "[PROVISION] Allow php-fpm to connect with external services"
+setsebool -P httpd_can_network_connect 1
+
 echo "[PROVISION] Opening up firewall"
 firewall-cmd --zone=public --add-service http
 firewall-cmd --zone=public --add-service http --permanent

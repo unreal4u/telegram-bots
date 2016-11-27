@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-vagrant ssh -- -t 'cd /vagrant; /usr/bin/php vendor/bin/doctrine orm:schema-tool:drop --force;/usr/bin/php vendor/bin/doctrine orm:schema-tool:create;'
+vagrant ssh -- -t 'cd /vagrant;\
+/usr/bin/php vendor/bin/doctrine orm:schema-tool:drop --force;\
+/usr/bin/php vendor/bin/doctrine orm:clear-cache:metadata;\
+/usr/bin/php vendor/bin/doctrine orm:schema-tool:create;'

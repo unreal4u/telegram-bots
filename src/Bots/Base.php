@@ -7,9 +7,10 @@ namespace unreal4u\TelegramBots\Bots;
 use Doctrine\ORM\EntityManager;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
-use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
+use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Types\Custom\ResultNull;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\TelegramBots\Bots\Interfaces\Bots;
@@ -118,20 +119,26 @@ abstract class Base implements Bots {
         $this->response = new SendMessage();
         $this->response->chat_id = $this->chatId;
         $this->response->reply_to_message_id = $this->updateObject->message->message_id;
+        $this->response->parse_mode = 'Markdown';
+        // Send short, concise messages without interference of links
+        $this->response->disable_web_page_preview = true;
 
         return $this;
     }
 
     /**
-     * Sends a response back to the Telegram servers
+     * Sends the generated response back to the Telegram servers
      *
-     * @param TelegramMethods $message
      * @return TelegramTypes
      */
-    final public function sendResponse(TelegramMethods $message): TelegramTypes
+    final public function sendResponse(): TelegramTypes
     {
-        $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
-        return $tgLog->performApiRequest($message);
+        if (!($this->response instanceof GetMe)) {
+            $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
+            return $tgLog->performApiRequest($this->response);
+        }
+
+        return new ResultNull();
     }
 
     /**
@@ -142,8 +149,10 @@ abstract class Base implements Bots {
      */
     final protected function setupDatabaseSettings(string $entityNamespace): Base
     {
-        $wrapper = new DatabaseWrapper();
-        $this->db = $wrapper->getEntity($entityNamespace);
+        if (is_null($this->db)) {
+            $wrapper = new DatabaseWrapper();
+            $this->db = $wrapper->getEntity($entityNamespace);
+        }
 
         return $this;
     }

@@ -13,8 +13,10 @@ use Ramsey\Uuid\Uuid;
  *          @Index(name="K_userId", columns={"userId"}),
  *          @Index(name="K_chatId", columns={"chatId"})
  *     },
- *     uniqueConstraints=
- *       {@UniqueConstraint(name="UK_ChatUserId", columns={"userId", "chatId"})}
+ *     uniqueConstraints={
+ *          @UniqueConstraint(name="UK_ChatUserId", columns={"userId", "chatId"}),
+ *          @UniqueConstraint(name="UK_NotifyUrl", columns={"notifyUrl"})
+ *     }
  * )
  */
 class Monitors
@@ -24,7 +26,7 @@ class Monitors
     const TYPE_SELFCHECK = 1;
 
     /**
-     * @var string
+     * @var Uuid
      * @Id
      * @Column(type="uuid_binary")
      * @GeneratedValue(strategy="CUSTOM")
@@ -120,7 +122,7 @@ class Monitors
      */
     public function getId(): string
     {
-        return $this->id;
+        return $this->id->toString();
     }
 
     /**

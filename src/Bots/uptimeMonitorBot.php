@@ -6,7 +6,10 @@ namespace unreal4u\TelegramBots\Bots;
 
 use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
+use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
+use unreal4u\TelegramBots\Exceptions\InvalidRequest;
 use unreal4u\TelegramBots\Models\Entities\Events;
 use unreal4u\TelegramBots\Models\Entities\Monitors;
 
@@ -21,6 +24,10 @@ class UptimeMonitorBot extends Base {
      */
     private $monitor = null;
 
+    /**
+     * @param array $postData
+     * @return TelegramMethods
+     */
     public function createAnswer(array $postData=[]): TelegramMethods
     {
         $this->extractBasicInformation($postData);
@@ -46,20 +53,75 @@ class UptimeMonitorBot extends Base {
         }
     }
 
-    public function createNotificationMessage(Events $event): SendMessage
+    public function handleUptimeMonitorNotification(array $rawData, string $incomingUuid): EventManager
     {
-        $monitor = $this->db
-            ->getRepository('uptimeMonitorBot:Monitors')
+        $this->setupDatabaseSettings('UptimeMonitorBot');
+        $this->checkValidity($incomingUuid);
+
+        $eventManager = new EventManager($this->db);
+        $eventManager->fillEvent($rawData, $this->monitor);
+        $event = $eventManager->saveEvent();
+        $this->createNotificationMessage($event);
+
+        return $eventManager;
+    }
+
+    private function createNotificationMessage(Events $event): TelegramMethods
+    {
+        $this->monitor = $this->db
+            ->getRepository('UptimeMonitorBot:Monitors')
             ->find($event->getMonitorId());
 
-        if (!empty($monitor)) {
-            $this->response->text = sprintf(
-                'According to monitor %s for %s, you site is currently %s',
-                '[MONITOR]',
-                '[SITE]',
-                '[STATUS]'
-            );
+        $this->response = new GetMe();
+        if (!empty($this->monitor)) {
+            $this->response = new SendMessage();
+            $this->response->chat_id = $this->monitor->getChatId();
+            // No sense in trying to show webpage if it is down
+            $this->response->disable_web_page_preview = true;
+            // Allow basic decoration of text through markdown engine
+            $this->response->parse_mode = 'Markdown';
+            if ($event->getAlertType() === 1) {
+                $this->response->text = $this->messageSiteIsDown($event);
+            } else {
+                $this->response->text = $this->messageSiteIsUp($event);
+            }
         }
+
+        return $this->response;
+    }
+
+    /**
+     * Because the message is so large, make it an apart function
+     *
+     * @param Events $event
+     * @return string
+     */
+    private function messageSiteIsDown(Events $event): string
+    {
+        return sprintf(
+            'Attention! Site [%s](%s) is currently *down*!%s_Alert details:_ %s%s_Date of incident:_ %s UTC%s',
+            $event->getUrMonitorUrl(),
+            $event->getUrMonitorUrl(),
+            PHP_EOL,
+            $event->getUrAlertDetails(),
+            PHP_EOL,
+            $event->getUrAlertTime()->format('c'),
+            PHP_EOL.'You will be notified when the site is detected as up and running again'
+        );
+    }
+
+    private function messageSiteIsUp(Events $event): string
+    {
+        /** @var Events $previousEvent */
+        $previousEvent = $this->db
+            ->getRepository('UptimeMonitorBot:Events')
+            ->findOneBy(['urMonitorId' => $event->getUrMonitorId(), 'alertType' => 1]);
+
+        if (!empty($previousEvent)) {
+            $this->response->reply_to_message_id = $previousEvent->getTelegramMessageId();
+        }
+
+        return sprintf('The site %s is currently back up again', $event->getUrMonitorUrl());
     }
 
     /**
@@ -74,12 +136,10 @@ class UptimeMonitorBot extends Base {
             PHP_EOL
         );
 
-        $beginningTime = microtime(true);
         $this->monitor = $this->db
             ->getRepository('UptimeMonitorBot:Monitors')
             ->findOneBy(['userId' => $this->userId, 'chatId' => $this->chatId])
         ;
-        #var_dump(microtime(true) - $beginningTime);
 
         if (empty($this->monitor)) {
             $this->getNotifyUrl();
@@ -114,7 +174,10 @@ class UptimeMonitorBot extends Base {
             $uuid = $this->regenerateNotifyUrl();
         }
 
-        $this->response->text .= 'Fill in the following url in the box: `https://telegram.unreal4u.com/UptimeMonitorBot/'.$uuid.'?`';
+        $this->response->text .= sprintf(
+            'Fill in the following url in the box: `https://telegram.unreal4u.com/UptimeMonitorBot/%s?`',
+            $uuid
+        );
         return $this->response;
     }
 
@@ -132,5 +195,25 @@ class UptimeMonitorBot extends Base {
         $this->db->persist($this->monitor);
         $this->db->flush();
         return $this->monitor->getNotifyUrl();
+    }
+
+    /**
+     * Checks with the UUID in hand whether we have a valid request
+     *
+     * @param string $uuid
+     * @return UptimeMonitorBot
+     * @throws InvalidRequest
+     */
+    private function checkValidity(string $uuid): UptimeMonitorBot
+    {
+        $this->monitor = $this->db
+            ->getRepository('UptimeMonitorBot:Monitors')
+            ->findOneBy(['notifyUrl' => $uuid]);
+
+        if (empty($this->monitor)) {
+            throw new InvalidRequest('Invalid incoming UUID detected: '.$uuid);
+        }
+
+        return $this;
     }
 }
