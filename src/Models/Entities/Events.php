@@ -11,7 +11,7 @@ use unreal4u\TelegramBots\Models\Base;
  * @Table(name="Events",
  *     indexes={
  *         @Index(name="K_urMonitorId", columns={"urMonitorId"})
- *     }
+ *     })
  */
 class Events extends Base
 {
