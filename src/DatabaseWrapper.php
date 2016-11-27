@@ -38,11 +38,16 @@ class DatabaseWrapper {
     /**
      * Parses all configuration files and returns one final configuration
      *
+     * TODO Do this more elegantly
+     *
      * @return array
      */
     private function getFinalConfiguration(): array
     {
         $yamlConfFiles[] = Yaml::parse(file_get_contents('config/config.vagrant.yml'));
+        if (file_exists('config/config-prod.vagrant.yml')) {
+            $yamlConfFiles[] = Yaml::parse(file_get_contents('config/config-prod.vagrant.yml'));
+        }
         $mainConfiguration = new Configuration();
         $processor = new Processor();
         return $processor->processConfiguration($mainConfiguration, $yamlConfFiles);
