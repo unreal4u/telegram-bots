@@ -150,7 +150,7 @@ abstract class Base implements Bots {
     final protected function setupDatabaseSettings(string $entityNamespace): Base
     {
         if (is_null($this->db)) {
-            $wrapper = new DatabaseWrapper();
+            $wrapper = new DatabaseWrapper($this->logger);
             $this->db = $wrapper->getEntity($entityNamespace);
         }
 

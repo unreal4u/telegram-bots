@@ -5,12 +5,23 @@ declare(strict_types = 1);
 namespace unreal4u\TelegramBots;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Yaml\Yaml;
 use unreal4u\TelegramBots\Models\Configuration;
 use unreal4u\TelegramBots\Models\Toolbox;
 
 class DatabaseWrapper {
+    /**
+     * @var LoggerInterface
+     */
+    private $logger = null;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     /**
      * Will initialize an EntityManager and return that
      *
@@ -21,6 +32,7 @@ class DatabaseWrapper {
     public function getEntity(string $entityNamespace): EntityManager
     {
         $finalConfiguration = $this->getFinalConfiguration();
+        $this->logger->debug('Final configuration', [$finalConfiguration, 'entityNamespace' => $entityNamespace]);
 
         $toolbox = new Toolbox(false);
         $toolbox->setToolbox($finalConfiguration['mysql']['name'], [
