@@ -5,8 +5,9 @@ declare(strict_types = 1);
 namespace unreal4u\TelegramBots\Models;
 
 use Doctrine\Common\Cache\RedisCache;
+use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\ORM\Tools\Setup;
+use Doctrine\ORM\Configuration as DoctrineConfiguration;
 use Doctrine\ORM\EntityManager;
 use unreal4u\TelegramBots\Exceptions\Database\DriverAlreadyDefined;
 use unreal4u\TelegramBots\Exceptions\Database\DriverNotFound;
@@ -92,6 +93,8 @@ class Toolbox
     }
 
     /**
+     * @TODO find out why this is so damn slow on my environment
+     *
      * @param string $name
      * @param string $entityNamespace
      * @return EntityManager
@@ -102,29 +105,58 @@ class Toolbox
     {
         $driverSettings = $this->toolbox[$name];
 
-        $beginTime = microtime(true);
+        ##$beginTime = microtime(true);
         foreach ($driverSettings['types'] as $type => $className) {
             Type::addType($type, $className);
         }
-        var_dump(microtime(true) - $beginTime, $this->developmentMode);
+        ##var_dump('Begin: '.(string)(microtime(true) - $beginTime));
 
         $redis = new \Redis();
         $redis->connect('localhost', 6379);
+        ##var_dump('R1: '.(string)(microtime(true) - $beginTime));
+        # Typical time taken up until R1: 0.02060
 
         $cacheImplementation = new RedisCache();
         $cacheImplementation->setRedis($redis);
+        $cacheImplementation->setNamespace($entityNamespace);
+        ##var_dump('R2: '.(string)(microtime(true) - $beginTime));
+        # Typical time taken up until R2: 0.11683
 
-        $configuration = Setup::createAnnotationMetadataConfiguration([__DIR__.'/Entities'], $this->developmentMode);
+        $configuration = new DoctrineConfiguration();
+        $configuration->addEntityNamespace($entityNamespace, __NAMESPACE__.'\\Entities');
+
+        $configuration->setAutoGenerateProxyClasses(AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
+        ##var_dump('R3: '.(string)(microtime(true) - $beginTime));
+        # Typical time taken up until R3: 0.15823
+
+        $configuration->setProxyDir('/tmp/');
+        $configuration->setProxyNamespace($entityNamespace);
         $configuration->setMetadataCacheImpl($cacheImplementation);
         $configuration->setQueryCacheImpl($cacheImplementation);
         $configuration->setResultCacheImpl($cacheImplementation);
-        $configuration->addEntityNamespace($entityNamespace, __NAMESPACE__.'\\Entities');
+        ##var_dump('A: '.(string)(microtime(true) - $beginTime));
+        # Typical time taken up until A: 0.15827
 
-        var_dump(microtime(true) - $beginTime);
+        // This one is the problematic
+        #AnnotationRegistry::registerFile('vendor/doctrine/orm/lib/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
+        #$reader = new SimpleAnnotationReader();
+        #$reader->addNamespace('Doctrine\ORM\Mapping');
+        #$cachedReader = new CachedReader($reader, $cacheImplementation);
+        #$annotationDriver = new AnnotationDriver($cachedReader, [__DIR__.'/Entities']);
+
+        $annotationDriver = $configuration->newDefaultAnnotationDriver(__DIR__.'/Entities/');
+        ##var_dump('C: '.(string)(microtime(true) - $beginTime));
+        # Typical time taken up until C: 1.29277
+
+        $configuration->setMetadataDriverImpl($annotationDriver);
+        ##var_dump('Mid: '.(string)(microtime(true) - $beginTime));
+        # Typical time taken up until Mid: 1.29281
+
         $this->toolbox[$name]['initialized'] = true;
 
         $entityManager = EntityManager::create($this->toolbox[$name]['parameters'], $configuration);
-        var_dump(microtime(true) - $beginTime);
+        ##var_dump('Final: '.(string)(microtime(true) - $beginTime));
+        # Typical time taken up until Final: 1.64584
         return $entityManager;
     }
 }
