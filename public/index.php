@@ -6,6 +6,7 @@ include('../src/common.php');
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 
 $parsedRequestUri = trim($_SERVER['REQUEST_URI'], '/');
 if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
@@ -27,7 +28,10 @@ if (array_key_exists($parsedRequestUri, BOT_TOKENS)) {
         $bot = new $completeName($logger, $parsedRequestUri);
         $logger->debug('Incoming data', [$_POST]);
         $response = $bot->createAnswer($_POST);
-        $bot->sendResponse($response);
+        // Don't perform the actual request back to telegram if the method is GetMe
+        if (!($response instanceof GetMe)) {
+            $bot->sendResponse($response);
+        }
     } catch (\Exception $e) {
         $logger->addError(sprintf('Captured exception: "%s"', $e->getMessage()));
     }

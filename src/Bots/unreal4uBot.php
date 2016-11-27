@@ -5,6 +5,8 @@ declare(strict_types = 1);
 namespace unreal4u\TelegramBots\Bots;
 
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
+use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
+use unreal4u\TelegramAPI\Telegram\Types\File;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Query\Result\Article;
@@ -41,6 +43,8 @@ class unreal4uBot extends Base
 
         if (!empty($update->chosen_inline_result)) {
             $this->logger->debug('We have a chosen_inline_result back, result id: '.$update->chosen_inline_result->result_id);
+            // Hack: if we get a chosen_inline_result back, don't crash and return some method we can actually use
+            $method = new GetMe();
         }
 
         if (!empty($update->inline_query)) {
@@ -63,7 +67,8 @@ class unreal4uBot extends Base
             return $this->downloadSticker($message);
         }
 
-        return null;
+        // Hack: if we get a chosen_inline_result back, don't crash and return some method we can actually use
+        return new GetMe();
     }
 
     public function inlineQuery(Update $update): TelegramMethods
@@ -115,6 +120,7 @@ class unreal4uBot extends Base
             $getFile = new GetFile();
             $getFile->file_id = $message->sticker->file_id;
             $tgLog = new TgLog($this->token, $this->logger);
+            /** @var File $file */
             $file = $tgLog->performApiRequest($getFile);
             $tgDocument = $tgLog->downloadFile($file);
             $this->logger->debug('Downloaded sticker, sending it to temporary directory');

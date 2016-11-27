@@ -6,10 +6,8 @@ namespace unreal4u\TelegramBots\Bots;
 
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
-use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
 use unreal4u\TelegramAPI\Telegram\Types\Chat;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
-use unreal4u\TelegramAPI\TgLog;
 use unreal4u\localization;
 
 class TheTimeBot extends Base
@@ -106,13 +104,6 @@ class TheTimeBot extends Base
         }
 
         return $messageText;
-    }
-
-    protected function sendToUser(SendMessage $sendMessage): TelegramTypes
-    {
-        $this->logger->debug('Sending the message to user');
-        $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
-        return $tgLog->performApiRequest($sendMessage);
     }
 
     protected function prepareUserMessage(string $messageText, Chat $chat): SendMessage
