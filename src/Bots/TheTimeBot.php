@@ -22,11 +22,10 @@ class TheTimeBot extends Base
     {
         $update = new Update($postData, $this->logger);
         $this->logger->debug('Incoming data', $postData);
-        $this->performAction($update);
-        return $this;
+        return $this->performAction($update);
     }
 
-    public function performAction(Update $update): TheTimeBot
+    public function performAction(Update $update): SendMessage
     {
         if (empty($update->message->text) && !empty($update->edited_message->text)) {
             // We'll treat updates the same way as simple messages, maybe in the future edit the original sent msg as well?
@@ -52,10 +51,7 @@ class TheTimeBot extends Base
             $this->arguments = $update->message->location;
         }
 
-        $sendMessage = $this->prepareUserMessage($this->constructBasicMessage(), $update->message->chat);
-        $this->sendToUser($sendMessage);
-
-        return $this;
+        return $this->prepareUserMessage($this->constructBasicMessage(), $update->message->chat);
     }
 
     protected function constructBasicMessage(): string
