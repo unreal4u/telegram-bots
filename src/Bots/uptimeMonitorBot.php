@@ -8,6 +8,8 @@ use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
 use unreal4u\TelegramBots\Exceptions\InvalidRequest;
 use unreal4u\TelegramBots\Models\Entities\Events;
@@ -192,7 +194,24 @@ class UptimeMonitorBot extends Base {
 
     protected function setup(): SendMessage
     {
-        $this->response->text = _('');
+        $this->response->text = sprintf(
+            'Welcome! Let\'s get you up and running. [Open up this url](%s) and create a free account%s%s',
+            'https://uptimerobot.com',
+            PHP_EOL.PHP_EOL,
+            'Have you created the account?'
+        );
+
+        $inlineKeyboardButton = new Button();
+        $inlineKeyboardButton->text = 'Yes, take me to the next step!';
+        $inlineKeyboardButton->callback_data = 'setup-S2';
+
+        $inlineKeyboardMarkup = new Markup();
+        $inlineKeyboardMarkup->inline_keyboard = [$inlineKeyboardButton];
+
+        $this->response->disable_web_page_preview = false;
+        $this->response->parse_mode = 'Markdown';
+        $this->response->reply_markup = $inlineKeyboardMarkup;
+
         return $this->response;
     }
 

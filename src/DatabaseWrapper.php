@@ -32,7 +32,6 @@ class DatabaseWrapper {
     public function getEntity(string $entityNamespace): EntityManager
     {
         $finalConfiguration = $this->getFinalConfiguration();
-        $this->logger->debug('Final configuration', [$finalConfiguration, 'entityNamespace' => $entityNamespace]);
 
         $toolbox = new Toolbox(false);
         $toolbox->setToolbox($finalConfiguration['mysql']['name'], [
