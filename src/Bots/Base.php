@@ -97,21 +97,23 @@ abstract class Base implements Bots {
 
         $messageText = $this->updateObject->message->text;
 
-        // Getting the actual command send to the bot
-        $this->action = substr($messageText, 1);
+        if (!empty($messageText)) {
+            // Getting the actual command send to the bot
+            $this->action = substr($messageText, 1);
 
-        // Multiple bots in one group can be called with `/start@NameOfTheBot`, so strip the name of the bot off
-        if (strpos($this->action, '@') !== false) {
-            $this->action = substr($this->action, 0, strpos($this->action, '@'));
+            // Multiple bots in one group can be called with `/start@NameOfTheBot`, so strip the name of the bot off
+            if (strpos($this->action, '@') !== false) {
+                $this->action = substr($this->action, 0, strpos($this->action, '@'));
+            }
+
+            $extraArguments = strpos($this->action, ' ');
+            if ($extraArguments !== false) {
+                $this->subArguments = substr($this->action, $extraArguments);
+                $this->action = substr($this->action, 0, $extraArguments);
+            }
+
+            $this->createMessageStub();
         }
-
-        $extraArguments = strpos($this->action, ' ');
-        if ($extraArguments !== false) {
-            $this->subArguments = substr($this->action, $extraArguments);
-            $this->action = substr($this->action, 0, $extraArguments);
-        }
-
-        $this->createMessageStub();
 
         return $this;
     }

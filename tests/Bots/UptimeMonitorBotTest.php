@@ -64,4 +64,12 @@ class UptimeMonitorBotTest extends TestCase {
         $return = $this->wrapper->createAnswer($simulatedPost);
         #var_dump($return);
     }
+
+    public function testNewChatMember()
+    {
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'new-chat-member');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+        $this->assertInstanceOf('unreal4u\\TelegramApi\\Telegram\\Methods\\GetMe', $return);
+    }
 }

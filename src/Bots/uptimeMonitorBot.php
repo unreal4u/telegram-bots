@@ -49,6 +49,9 @@ class UptimeMonitorBot extends Base {
             case 'regenerate_notify_url':
                 return $this->regenerateNotifyUrl();
                 break;
+            case '':
+                return new GetMe();
+                break;
             case 'help':
             default:
                 return $this->help();
