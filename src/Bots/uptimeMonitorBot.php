@@ -34,6 +34,8 @@ class UptimeMonitorBot extends Base {
         // Database connections are mandatory for all operations on this bot
         $this->setupDatabaseSettings('UptimeMonitorBot');
 
+        $this->initializeMonitor();
+
         switch ($this->action) {
             case 'start':
                 return $this->start();
@@ -64,6 +66,25 @@ class UptimeMonitorBot extends Base {
         $this->createNotificationMessage($event);
 
         return $eventManager;
+    }
+
+    /**
+     * Try to associate a monitor to this user- and chatId
+     *
+     * @return UptimeMonitorBot
+     */
+    private function initializeMonitor(): uptimeMonitorBot
+    {
+        $this->monitor = $this->db
+            ->getRepository('UptimeMonitorBot:Monitors')
+            ->findOneBy(['userId' => $this->userId, 'chatId' => $this->chatId])
+        ;
+
+        if (empty($this->monitor)) {
+            $this->regenerateNotifyUrl();
+        }
+
+        return $this;
     }
 
     private function createNotificationMessage(Events $event): TelegramMethods
@@ -136,11 +157,6 @@ class UptimeMonitorBot extends Base {
             PHP_EOL
         );
 
-        $this->monitor = $this->db
-            ->getRepository('UptimeMonitorBot:Monitors')
-            ->findOneBy(['userId' => $this->userId, 'chatId' => $this->chatId])
-        ;
-
         if (empty($this->monitor)) {
             $this->getNotifyUrl();
         } else {
@@ -169,14 +185,13 @@ class UptimeMonitorBot extends Base {
 
     protected function getNotifyUrl(): SendMessage
     {
-        // TODO get UUID from DB
-        if (empty($uuid)) {
-            $uuid = $this->regenerateNotifyUrl();
+        if (empty($this->monitor)) {
+            $this->regenerateNotifyUrl();
         }
 
         $this->response->text .= sprintf(
             'Fill in the following url in the box: `https://telegram.unreal4u.com/UptimeMonitorBot/%s?`',
-            $uuid
+            $this->monitor->getNotifyUrl()
         );
         return $this->response;
     }
@@ -184,9 +199,9 @@ class UptimeMonitorBot extends Base {
     /**
      * Will generate a new monitorId in our database
      *
-     * @return string
+     * @return Monitors
      */
-    private function regenerateNotifyUrl(): string
+    private function regenerateNotifyUrl(): Monitors
     {
         $this->monitor = new Monitors();
         $this->monitor->setNotifyUrl(Uuid::uuid4()->toString());
@@ -194,7 +209,7 @@ class UptimeMonitorBot extends Base {
         $this->monitor->setUserId($this->userId);
         $this->db->persist($this->monitor);
         $this->db->flush();
-        return $this->monitor->getNotifyUrl();
+        return $this->monitor;
     }
 
     /**
