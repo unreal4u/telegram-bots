@@ -95,7 +95,7 @@ class Events extends Base
      * Raw data as we received it from the uptime monitor. Useful for debugging
      *
      * @var string
-     * @Column(type="string", nullable=true)
+     * @Column(type="text", nullable=true)
      */
     protected $rawData = '';
 
