@@ -109,12 +109,12 @@ class TheTimeBot extends Base
     protected function prepareUserMessage(string $messageText, Chat $chat): SendMessage
     {
         $this->logger->debug('Preparing the actual message to be sent to the user', ['text' => $messageText, 'chatId' => $chat->id]);
-        $sendMessage = new SendMessage();
-        $sendMessage->chat_id = $chat->id;
-        $sendMessage->text = $messageText;
-        $sendMessage->parse_mode = 'Markdown';
+        $this->response = new SendMessage();
+        $this->response->chat_id = $chat->id;
+        $this->response->text = $messageText;
+        $this->response->parse_mode = 'Markdown';
 
-        return $sendMessage;
+        return $this->response;
     }
 
     protected function formatTimezone(): TheTimeBot
