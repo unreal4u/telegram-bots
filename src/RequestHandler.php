@@ -79,13 +79,13 @@ class RequestHandler {
         $redirect = true;
         $requestUriParts = explode('/', $requestUri);
 
-        if (strtolower($requestUriParts[1]) === 'uptimemonitorbot') {
+        if (strtolower($requestUriParts[0]) === 'uptimemonitorbot') {
             $this->setupBotLogger('UptimeMonitorBot');
             $flippedKeys = array_flip(BOT_TOKENS);
 
             try {
                 $bot = new UptimeMonitorBot($this->botLogger, $flippedKeys['UptimeMonitorBot']);
-                $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[2]);
+                $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[1]);
                 /** @var Message $message */
                 $message = $bot->sendResponse();
                 $redirect = false;
