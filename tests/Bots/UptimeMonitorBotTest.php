@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace unreal4u\TelegramBots\tests\Bots;
 
 use PHPUnit_Framework_TestCase as TestCase;
+use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramBots\Bots\UptimeMonitorBot;
 use unreal4u\TelegramBots\Tests\bootstrap;
 
@@ -32,6 +33,7 @@ class UptimeMonitorBotTest extends TestCase {
     public function testStartCommand()
     {
         $simulatedPost = $this->bootstrap->getSimulatedPostData('start');
+        /** @var SendMessage $return */
         $return = $this->wrapper->createAnswer($simulatedPost);
 
         $this->assertInstanceOf('unreal4u\\TelegramApi\\Telegram\\Methods\\SendMessage', $return);
@@ -53,5 +55,13 @@ class UptimeMonitorBotTest extends TestCase {
     public function testGetNotifyUrl()
     {
         $this->markTestIncomplete('TODO');
+    }
+
+    public function testGroupSetup()
+    {
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('setup', 'group');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+        #var_dump($return);
     }
 }

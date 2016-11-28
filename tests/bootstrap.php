@@ -72,8 +72,11 @@ class bootstrap {
         return $this->logger;
     }
 
-    public function getSimulatedPostData(string $command): array
+    public function getSimulatedPostData(string $command, string $subcommand = ''): array
     {
+        if (!empty($subcommand)) {
+            $command = $command.'-'.$subcommand;
+        }
         $filename = 'tests/commandEmulator/Bots/'.$this->botName.'/'.$command.'.json';
         if (!file_exists($filename)) {
             throw new \Exception(sprintf('Command emulator file "%s" not found', $filename));

@@ -26,7 +26,7 @@ class RequestHandler {
 
         if (!array_key_exists($requestUri, BOT_TOKENS)) {
             // Can be a request from UptimeMonitor or somebody scanning us
-            $this->logger->debug('Received inbound url not coming from Telegram servers');
+            $this->logger->info('Received inbound url not coming from Telegram servers');
             $this->uptimeMonitorNotification($requestUri);
         } else {
             // Can only be a request directly to out bot from Telegram servers
@@ -78,26 +78,27 @@ class RequestHandler {
     {
         $redirect = true;
         $requestUriParts = explode('/', $requestUri);
-        $this->logger->debug('Incoming request', ['bot' => $requestUriParts[0], 'uuid' => $requestUriParts[1]]);
+        if (!empty($requestUriParts[0])) {
+            $this->logger->info('Incoming request for bot', ['bot' => $requestUriParts[0], 'uuid' => $requestUriParts[1]]);
+            if (strtolower($requestUriParts[0]) === 'uptimemonitorbot') {
+                $this->setupBotLogger('UptimeMonitorBot');
+                $flippedKeys = array_flip(BOT_TOKENS);
 
-        if (strtolower($requestUriParts[0]) === 'uptimemonitorbot') {
-            $this->setupBotLogger('UptimeMonitorBot');
-            $flippedKeys = array_flip(BOT_TOKENS);
+                try {
+                    $bot = new UptimeMonitorBot($this->botLogger, $flippedKeys['UptimeMonitorBot']);
+                    $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[1]);
+                    /** @var Message $message */
+                    $message = $bot->sendResponse();
+                    $redirect = false;
+                    if ($message->message_id !== false) {
+                        // To be able to respond with a reply, quoting the original text
+                        $eventManager->setEventNotified($message->message_id);
+                    }
 
-            try {
-                $bot = new UptimeMonitorBot($this->botLogger, $flippedKeys['UptimeMonitorBot']);
-                $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[1]);
-                /** @var Message $message */
-                $message = $bot->sendResponse();
-                $redirect = false;
-                if ($message->message_id !== false) {
-                    // To be able to respond with a reply, quoting the original text
-                    $eventManager->setEventNotified($message->message_id);
+                } catch (\Exception $e) {
+                    $this->logger->error($e->getMessage().' (File: '.$e->getFile().':'.$e->getLine().')');
+                    // Do nothing here and let the requestHandler redirect the user to my github page
                 }
-
-            } catch (\Exception $e) {
-                $this->logger->error($e->getMessage().' (File: '.$e->getFile().':'.$e->getLine().')');
-                // Do nothing here and let the requestHandler redirect the user to my github page
             }
         }
 
