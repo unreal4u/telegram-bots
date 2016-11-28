@@ -72,4 +72,12 @@ class UptimeMonitorBotTest extends TestCase {
         $return = $this->wrapper->createAnswer($simulatedPost);
         $this->assertInstanceOf('unreal4u\\TelegramApi\\Telegram\\Methods\\GetMe', $return);
     }
+
+    public function testInvalidCommand()
+    {
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'invalid-command');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+        $this->assertInstanceOf('unreal4u\\TelegramApi\\Telegram\\Methods\\GetMe', $return);
+    }
 }

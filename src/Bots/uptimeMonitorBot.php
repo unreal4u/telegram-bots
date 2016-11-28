@@ -49,12 +49,13 @@ class UptimeMonitorBot extends Base {
             case 'regenerate_notify_url':
                 return $this->regenerateNotifyUrl();
                 break;
+            case 'help':
+                return $this->help();
+                break;
             case '':
+            default:
                 return new GetMe();
                 break;
-            case 'help':
-            default:
-                return $this->help();
         }
     }
 
@@ -62,10 +63,12 @@ class UptimeMonitorBot extends Base {
     {
         $this->setupDatabaseSettings('UptimeMonitorBot');
         $this->checkValidity($incomingUuid);
+        $this->logger->info('Found valid incoming UUID, processing the request', ['uuid' => $incomingUuid]);
 
         $eventManager = new EventManager($this->db);
         $eventManager->fillEvent($rawData, $this->monitor);
         $event = $eventManager->saveEvent();
+        $this->logger->debug('Saved event, creating notification message');
         $this->createNotificationMessage($event);
 
         return $eventManager;
@@ -98,6 +101,7 @@ class UptimeMonitorBot extends Base {
 
         $this->response = new GetMe();
         if (!empty($this->monitor)) {
+            $this->logger->info('Found a monitor corresponding to UUID, creating the message');
             $this->response = new SendMessage();
             $this->response->chat_id = $this->monitor->getChatId();
             // No sense in trying to show webpage if it is down
@@ -122,6 +126,7 @@ class UptimeMonitorBot extends Base {
      */
     private function messageSiteIsDown(Events $event): string
     {
+        $this->logger->info('Generating DOWN message');
         return sprintf(
             'Attention! Site [%s](%s) is currently *down*!%s_Alert details:_ %s%s_Date of incident:_ %s UTC%s',
             $event->getUrMonitorUrl(),
@@ -136,16 +141,21 @@ class UptimeMonitorBot extends Base {
 
     private function messageSiteIsUp(Events $event): string
     {
+        $this->logger->info('Generating UP message');
         /** @var Events $previousEvent */
         $previousEvent = $this->db
             ->getRepository('UptimeMonitorBot:Events')
             ->findOneBy(['urMonitorId' => $event->getUrMonitorId(), 'alertType' => 1]);
 
         if (!empty($previousEvent)) {
+            $this->logger->debug('Found a previous messageId to reply to, setting it', [
+                $previousEvent->getTelegramMessageId()
+            ]);
+
             $this->response->reply_to_message_id = $previousEvent->getTelegramMessageId();
         }
 
-        return sprintf('The site %s is currently back up again', $event->getUrMonitorUrl());
+        return sprintf('The site %s is currently back up again, happy surfing! :)', $event->getUrMonitorUrl());
     }
 
     /**
