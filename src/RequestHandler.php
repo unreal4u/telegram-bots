@@ -78,6 +78,7 @@ class RequestHandler {
     {
         $redirect = true;
         $requestUriParts = explode('/', $requestUri);
+        $this->logger->debug('Incoming request', ['bot' => $requestUriParts[0], 'uuid' => $requestUriParts[1]]);
 
         if (strtolower($requestUriParts[0]) === 'uptimemonitorbot') {
             $this->setupBotLogger('UptimeMonitorBot');
@@ -95,6 +96,7 @@ class RequestHandler {
                 }
 
             } catch (\Exception $e) {
+                $this->logger->error($e->getMessage().' (File: '.$e->getFile().':'.$e->getLine().')');
                 // Do nothing here and let the requestHandler redirect the user to my github page
             }
         }
