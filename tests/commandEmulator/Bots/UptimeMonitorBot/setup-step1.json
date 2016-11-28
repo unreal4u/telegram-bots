@@ -1,0 +1,1 @@
+{"update_id":758442026,"message":{"message_id":54,"from":{"id":12345678,"first_name":"Camilo","last_name":"Sperberg","username":"unreal4u"},"chat":{"id":12345678,"first_name":"Camilo","last_name":"Sperberg","username":"unreal4u","type":"private"},"date":1480372913,"text":"/setup","entities":[{"type":"bot_command","offset":0,"length":6}]}}

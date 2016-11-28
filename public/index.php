@@ -9,7 +9,7 @@ use Monolog\Handler\StreamHandler;
 use unreal4u\TelegramBots\RequestHandler;
 
 $logger = new Logger('TGBot');
-$streamHandler = new StreamHandler('telegramApiLogs/main.log');
+$streamHandler = new StreamHandler('telegramApiLogs/main.log', Logger::INFO);
 $logger->pushHandler($streamHandler);
 
 $trimmedRequestUri = trim($_SERVER['DOCUMENT_URI'], '/');

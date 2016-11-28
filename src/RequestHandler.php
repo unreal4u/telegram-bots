@@ -39,6 +39,7 @@ class RequestHandler {
         $this->botLogger = new Logger($currentBot);
         $streamHandler = new StreamHandler('telegramApiLogs/'.$currentBot.'.log');
         $this->botLogger->pushHandler($streamHandler);
+        $this->botLogger->debug(str_repeat('-', 20).' New request '.str_repeat('-', 20));
 
         return $this;
     }
@@ -46,7 +47,7 @@ class RequestHandler {
     private function newBotRequest(string $currentBot, string $botToken): bool
     {
         $this->logger->info(sprintf(
-            'New request on bot %s, logging to telegramApiLogs/%s.log',
+            'New request on bot %s, relaying log to telegramApiLogs/%s.log',
             $currentBot,
             $currentBot
         ));
@@ -62,7 +63,9 @@ class RequestHandler {
             $bot = new $completeName($this->botLogger, $botToken);
             $this->botLogger->debug('Incoming data', [$_POST]);
             $bot->createAnswer($_POST);
+            $this->botLogger->debug('Created an answer');
             $bot->sendResponse();
+            $this->botLogger->debug('Sent a response to Telegram servers, work is done');
         } catch (\Exception $e) {
             $this->logger->error(sprintf('Captured exception: "%s" for bot %s', $e->getMessage(), $currentBot));
         }
@@ -76,10 +79,16 @@ class RequestHandler {
      */
     private function uptimeMonitorNotification(string $requestUri): bool
     {
+        $this->logger->info('Received a probable notification from monitor API');
         $redirect = true;
         $requestUriParts = explode('/', $requestUri);
+
         if (!empty($requestUriParts[0])) {
-            $this->logger->info('Incoming request for bot', ['bot' => $requestUriParts[0], 'uuid' => $requestUriParts[1]]);
+            $this->logger->info('Incoming request for bot', [
+                'bot' => $requestUriParts[0],
+                'uuid' => $requestUriParts[1]
+            ]);
+
             if (strtolower($requestUriParts[0]) === 'uptimemonitorbot') {
                 $this->setupBotLogger('UptimeMonitorBot');
                 $flippedKeys = array_flip(BOT_TOKENS);
@@ -94,7 +103,6 @@ class RequestHandler {
                         // To be able to respond with a reply, quoting the original text
                         $eventManager->setEventNotified($message->message_id);
                     }
-
                 } catch (\Exception $e) {
                     $this->logger->error($e->getMessage().' (File: '.$e->getFile().':'.$e->getLine().')');
                     // Do nothing here and let the requestHandler redirect the user to my github page
@@ -103,7 +111,7 @@ class RequestHandler {
         }
 
         if ($redirect === true) {
-            $this->logger->warning('Request not coming from uptime monitor or Telegram servers, please check logs');
+            $this->logger->warning('Request not coming from monitor API or Telegram servers, please check logs');
             header('Location: https://github.com/unreal4u?tab=repositories', true, 302);
         }
 

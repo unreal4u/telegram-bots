@@ -167,6 +167,7 @@ class UptimeMonitorBot extends Base {
      */
     protected function start(): SendMessage
     {
+        $this->logger->debug('[CMD] Inside START');
         $this->response->text = sprintf(
             _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down!%s'),
             PHP_EOL
@@ -183,6 +184,7 @@ class UptimeMonitorBot extends Base {
 
     protected function help(): SendMessage
     {
+        $this->logger->debug('[CMD] Inside HELP');
         $messageText  = _(sprintf('Your notifyUrl is: %s', self::botBaseUrl.$this->monitor->getNotifyUrl())).PHP_EOL;
         $messageText .= _('The available commands are: ').PHP_EOL;
         $messageText .= _('`setup`: Guides you through the setup of a new monitor').PHP_EOL;
@@ -194,6 +196,7 @@ class UptimeMonitorBot extends Base {
 
     protected function setup(): SendMessage
     {
+        $this->logger->debug('[CMD] Inside SETUP');
         $this->response->text = sprintf(
             'Welcome! Let\'s get you up and running. [Open up this url](%s) and create a free account%s%s',
             'https://uptimerobot.com',
@@ -204,19 +207,23 @@ class UptimeMonitorBot extends Base {
         $inlineKeyboardButton = new Button();
         $inlineKeyboardButton->text = 'Yes, take me to the next step!';
         $inlineKeyboardButton->callback_data = 'setup-S2';
+        $this->logger->debug('Created inlineKeyboardButton');
 
         $inlineKeyboardMarkup = new Markup();
-        $inlineKeyboardMarkup->inline_keyboard = [$inlineKeyboardButton];
+        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardButton];
+        $this->logger->debug('Created inlineKeyboardMarkup');
 
         $this->response->disable_web_page_preview = false;
         $this->response->parse_mode = 'Markdown';
         $this->response->reply_markup = $inlineKeyboardMarkup;
+        $this->logger->debug('Response ready');
 
         return $this->response;
     }
 
     protected function getNotifyUrl(): SendMessage
     {
+        $this->logger->debug('[CMD] Inside GETNOTIFYURL');
         if (empty($this->monitor)) {
             $this->regenerateNotifyUrl();
         }
