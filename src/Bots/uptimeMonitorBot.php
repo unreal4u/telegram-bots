@@ -38,7 +38,7 @@ class UptimeMonitorBot extends Base {
 
         $this->initializeMonitor();
 
-        switch ($this->action) {
+        switch ($this->botCommand) {
             case 'start':
                 return $this->start();
                 break;
@@ -213,7 +213,7 @@ class UptimeMonitorBot extends Base {
         $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardButton];
         $this->logger->debug('Created inlineKeyboardMarkup');
 
-        $this->response->disable_web_page_preview = false;
+        $this->response->disable_web_page_preview = true;
         $this->response->parse_mode = 'Markdown';
         $this->response->reply_markup = $inlineKeyboardMarkup;
         $this->logger->debug('Response ready');

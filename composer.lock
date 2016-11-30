@@ -1514,12 +1514,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unreal4u/telegram-api.git",
-                "reference": "1add65868c5f4d3bb0a47b50f078635dac2d31b1"
+                "reference": "d98db4fb9c0ef84f9cb6486cfcc09c7d86de7dec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/1add65868c5f4d3bb0a47b50f078635dac2d31b1",
-                "reference": "1add65868c5f4d3bb0a47b50f078635dac2d31b1",
+                "url": "https://api.github.com/repos/unreal4u/telegram-api/zipball/d98db4fb9c0ef84f9cb6486cfcc09c7d86de7dec",
+                "reference": "d98db4fb9c0ef84f9cb6486cfcc09c7d86de7dec",
                 "shasum": ""
             },
             "require": {
@@ -1556,7 +1556,7 @@
                 "telegram",
                 "telegram bot"
             ],
-            "time": "2016-11-27 22:11:31"
+            "time": "2016-11-30 00:42:51"
         }
     ],
     "packages-dev": [

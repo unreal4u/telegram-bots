@@ -35,7 +35,7 @@ class BaseMock extends Base
 
     public function getAction(): string
     {
-        return $this->action;
+        return $this->botCommand;
     }
 
     public function getUpdateObject(): Update

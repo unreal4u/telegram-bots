@@ -11,6 +11,7 @@ use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Types\Custom\ResultNull;
+use unreal4u\TelegramAPI\Telegram\Types\Message;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\TelegramBots\Bots\Interfaces\Bots;
@@ -48,7 +49,7 @@ abstract class Base implements Bots {
      * Handy shortcut
      * @var string
      */
-    protected $action = '';
+    protected $botCommand = '';
 
     /**
      * Handy shortcut
@@ -71,6 +72,11 @@ abstract class Base implements Bots {
      */
     protected $response = null;
 
+    /**
+     * @var Message
+     */
+    private $message = null;
+
     final public function __construct(LoggerInterface $logger, string $token, Client $client = null)
     {
         $this->logger = $logger;
@@ -92,27 +98,38 @@ abstract class Base implements Bots {
     final protected function extractBasicInformation(array $postData): Base
     {
         $this->updateObject = new Update($postData);
-        $this->userId = $this->updateObject->message->from->id;
-        $this->chatId = $this->updateObject->message->chat->id;
 
-        $messageText = $this->updateObject->message->text;
+        $this
+            ->extractUserInformation()
+            ->extractBotCommand()
+            ->createMessageStub()
+        ;
 
-        if (!empty($messageText)) {
-            // Getting the actual command send to the bot
-            $this->action = substr($messageText, 1);
+        return $this;
+    }
 
-            // Multiple bots in one group can be called with `/start@NameOfTheBot`, so strip the name of the bot off
-            if (strpos($this->action, '@') !== false) {
-                $this->action = substr($this->action, 0, strpos($this->action, '@'));
-            }
+    final private function extractUserInformation(): Base
+    {
+        if (!empty($this->updateObject->message)) {
+            $this->message = $this->updateObject->message;
+            $this->entities = $this->updateObject->message->entities;
+        }
 
-            $extraArguments = strpos($this->action, ' ');
-            if ($extraArguments !== false) {
-                $this->subArguments = substr($this->action, $extraArguments);
-                $this->action = substr($this->action, 0, $extraArguments);
-            }
+        if (!empty($this->updateObject->edited_message)) {
+            $this->message = $this->updateObject->edited_message;
+            $this->entities = $this->updateObject->edited_message->entities;
+        }
 
-            $this->createMessageStub();
+        if (!empty($this->updateObject->callback_query->message)) {
+            $this->message = $this->updateObject->callback_query->message;
+            $this->entities = $this->updateObject->callback_query->message->entities;
+        }
+
+        if (!empty($this->message)) {
+            $this->chatId = $this->message->chat->id;
+            $this->userId = $this->message->from->id;
+        } else {
+            throw new \Exception('Impossible condition detected or faulty update message...');
         }
 
         return $this;
@@ -127,7 +144,7 @@ abstract class Base implements Bots {
     {
         $this->response = new SendMessage();
         $this->response->chat_id = $this->chatId;
-        $this->response->reply_to_message_id = $this->updateObject->message->message_id;
+        $this->response->reply_to_message_id = $this->message->message_id;
         $this->response->parse_mode = 'Markdown';
         // Send short, concise messages without interference of links
         $this->response->disable_web_page_preview = true;
@@ -161,6 +178,28 @@ abstract class Base implements Bots {
         if (is_null($this->db)) {
             $wrapper = new DatabaseWrapper($this->logger);
             $this->db = $wrapper->getEntity($entityNamespace);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Extracts the bot command from the update query
+     *
+     * @return Base
+     */
+    final private function extractBotCommand(): Base
+    {
+        foreach ($this->message->entities as $entity) {
+            if ($entity->type == 'bot_command') {
+                $this->botCommand = substr($this->message->text, $entity->offset + 1, $entity->length);
+                // Multiple bots in one group can be called with `/start@NameOfTheBot`, so strip the name of the bot
+                if (strpos($this->botCommand, '@') !== false) {
+                    $this->botCommand = substr($this->botCommand, 0, strpos($this->botCommand, '@'));
+                }
+
+                $this->subArguments = substr($this->message->text, $entity->offset + $entity->length + 1);
+            }
         }
 
         return $this;
