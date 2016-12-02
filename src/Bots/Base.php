@@ -10,12 +10,17 @@ use Psr\Log\LoggerInterface;
 use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Types\CallbackQuery;
 use unreal4u\TelegramAPI\Telegram\Types\Custom\ResultNull;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\ChosenResult;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Query;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
+use unreal4u\TelegramAPI\Telegram\Types\MessageEntity;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 use unreal4u\TelegramBots\DatabaseWrapper;
+use unreal4u\TelegramBots\Exceptions\InvalidUpdateObject;
 
 abstract class Base implements Bots {
     /**
@@ -75,7 +80,12 @@ abstract class Base implements Bots {
     /**
      * @var Message
      */
-    private $message = null;
+    protected $message = null;
+
+    /**
+     * @var MessageEntity
+     */
+    protected $entities = null;
 
     final public function __construct(LoggerInterface $logger, string $token, Client $client = null)
     {
@@ -98,38 +108,64 @@ abstract class Base implements Bots {
     final protected function extractBasicInformation(array $postData): Base
     {
         $this->updateObject = new Update($postData);
-
-        $this
-            ->extractUserInformation()
-            ->extractBotCommand()
-            ->createMessageStub()
-        ;
+        $this->decomposeUpdateObject();
 
         return $this;
     }
 
-    final private function extractUserInformation(): Base
+    /**
+     * Decomposes the incoming update object into subparts we can actually use
+     *
+     * At most one of the optional parameters can be present in any given update
+     * @see https://core.telegram.org/bots/api#update
+     *
+     * Where optional parameters is one of the following:
+     * message: New incoming message of any kind — text, photo, sticker, etc.
+     * edited_message: New version of a message that is known to the bot and was edited
+     * channel_post: New incoming channel post of any kind — text, photo, sticker, etc.
+     * edited_channel_post: New version of a channel post that is known to the bot and was edited
+     * inline_query: New incoming inline query
+     * chosen_inline_result: The result of an inline query that was chosen by a user and sent to their chat partner.
+     * callback_query: New incoming callback query
+     *
+     * @throws InvalidUpdateObject
+     * @throws \Exception
+     * @return Base
+     */
+    final private function decomposeUpdateObject(): Base
     {
-        if (!empty($this->updateObject->message)) {
-            $this->message = $this->updateObject->message;
-            $this->entities = $this->updateObject->message->entities;
-        }
-
-        if (!empty($this->updateObject->edited_message)) {
-            $this->message = $this->updateObject->edited_message;
-            $this->entities = $this->updateObject->edited_message->entities;
-        }
-
-        if (!empty($this->updateObject->callback_query->message)) {
-            $this->message = $this->updateObject->callback_query->message;
-            $this->entities = $this->updateObject->callback_query->message->entities;
-        }
-
-        if (!empty($this->message)) {
-            $this->chatId = $this->message->chat->id;
-            $this->userId = $this->message->from->id;
-        } else {
-            throw new \Exception('Impossible condition detected or faulty update message...');
+        foreach ($this->updateObject as $telegramTypeName => $telegramType) {
+            if ($telegramType instanceof Query || $telegramType instanceof ChosenResult) {
+                // TODO There are a lot of things to do for this kind of messages, but no examples at hand right now
+                $this->userId = $telegramType->from->id;
+                throw new \Exception('To be implemented...');
+            } elseif ($telegramType instanceof CallbackQuery) {
+                // A callback query can also originate from a inline bot result, in that case, Message isn't set
+                $this->userId = $telegramType->from->id;
+                if (!empty($telegramType->message)) {
+                    $this->message = $telegramType->message;
+                    $this->entities = $telegramType->message->entities;
+                    $this->chatId = $telegramType->message->chat->id;
+                }
+                // Once we have the basic values we need to continue, break out of the loop
+                break;
+            } elseif (is_object($telegramType)) {
+                $this->message = $telegramType;
+                $this->entities = $telegramType->entities;
+                $this->chatId = $telegramType->chat->id;
+                $this->userId = $telegramType->from->id;
+                $this->extractBotCommand();
+                // Once we have the basic values we need to continue, break out of the loop
+                break;
+            } else {
+                if (!empty($telegramType) && $telegramTypeName !== 'update_id') {
+                    $this->logger->critical('Faulty Update object detected! Check ASAP', [
+                        'typeObject' => $telegramTypeName,
+                        'update' => $this->updateObject,
+                    ]);
+                    throw new InvalidUpdateObject('Impossible condition detected or faulty update message...');
+                }
+            }
         }
 
         return $this;
@@ -140,7 +176,7 @@ abstract class Base implements Bots {
      *
      * @return Base
      */
-    final private function createMessageStub(): Base
+    final protected function createSimpleMessageStub(): Base
     {
         $this->response = new SendMessage();
         $this->response->chat_id = $this->chatId;

@@ -6,12 +6,13 @@ namespace unreal4u\TelegramBots\Bots;
 
 use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
+use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
-use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
-use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step1;
 use unreal4u\TelegramBots\Exceptions\InvalidRequest;
+use unreal4u\TelegramBots\Exceptions\InvalidSetupRequest;
 use unreal4u\TelegramBots\Models\Entities\Events;
 use unreal4u\TelegramBots\Models\Entities\Monitors;
 
@@ -40,18 +41,22 @@ class UptimeMonitorBot extends Base {
 
         switch ($this->botCommand) {
             case 'start':
+                $this->createSimpleMessageStub();
                 return $this->start();
                 break;
             case 'setup':
                 return $this->setup();
                 break;
             case 'get_notify_url':
+                $this->createSimpleMessageStub();
                 return $this->getNotifyUrl();
                 break;
             case 'regenerate_notify_url':
+                $this->createSimpleMessageStub();
                 return $this->regenerateNotifyUrl();
                 break;
             case 'help':
+                $this->createSimpleMessageStub();
                 return $this->help();
                 break;
             case '':
@@ -197,26 +202,27 @@ class UptimeMonitorBot extends Base {
     protected function setup(): SendMessage
     {
         $this->logger->debug('[CMD] Inside SETUP');
-        $this->response->text = sprintf(
-            'Welcome! Let\'s get you up and running. [Open up this url](%s) and create a free account%s%s',
-            'https://uptimerobot.com',
-            PHP_EOL.PHP_EOL,
-            'Have you created the account?'
-        );
 
-        $inlineKeyboardButton = new Button();
-        $inlineKeyboardButton->text = 'Yes, take me to the next step!';
-        $inlineKeyboardButton->callback_data = 'setup-S2';
-        $this->logger->debug('Created inlineKeyboardButton');
-
-        $inlineKeyboardMarkup = new Markup();
-        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardButton];
-        $this->logger->debug('Created inlineKeyboardMarkup');
-
-        $this->response->disable_web_page_preview = true;
-        $this->response->parse_mode = 'Markdown';
-        $this->response->reply_markup = $inlineKeyboardMarkup;
-        $this->logger->debug('Response ready');
+        switch ($this->subArguments) {
+            // No subarguments? We are in the first step, so return a simple message to begin with the rest
+            case '':
+                $this->createSimpleMessageStub();
+                $step = new Step1($this->logger, $this->response);
+                $step->createAnswer();
+                break;
+            case 'step2':
+                #$this->response = new AnswerCallbackQuery();
+                // Edit the previous message? or maybe send an entire new message? not sure yet, I'll have to try out
+                $this->response = new EditMessageText();
+                break;
+            default:
+                $this->logger->error('Invalid step detected!', [
+                    'botCommand' => $this->botCommand,
+                    'subArguments' => $this->subArguments
+                ]);
+                throw new InvalidSetupRequest('An invalid step has been detected, please check!');
+                break;
+        }
 
         return $this->response;
     }
