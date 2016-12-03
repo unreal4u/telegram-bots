@@ -21,5 +21,5 @@ interface UptimeMonitorSetupSteps
      *
      * @return TelegramMethods
      */
-    public function createAnswer(): TelegramMethods;
+    public function generateAnswer(): TelegramMethods;
 }

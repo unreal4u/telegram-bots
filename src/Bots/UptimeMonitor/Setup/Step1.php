@@ -9,7 +9,7 @@ use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
 
 class Step1 extends Common {
-    public function createAnswer(): TelegramMethods
+    public function generateAnswer(): TelegramMethods
     {
         $this->response->text = sprintf(
             'Welcome! Let\'s get you up and running. [Open up this url](%s) and create a free account%s%s',

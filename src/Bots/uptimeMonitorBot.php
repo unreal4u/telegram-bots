@@ -12,6 +12,7 @@ use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step1;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step2;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step3;
 use unreal4u\TelegramBots\Exceptions\InvalidRequest;
 use unreal4u\TelegramBots\Exceptions\InvalidSetupRequest;
 use unreal4u\TelegramBots\Models\Entities\Events;
@@ -209,19 +210,25 @@ class UptimeMonitorBot extends Base {
             case '':
                 $this->createSimpleMessageStub();
                 $step = new Step1($this->logger, $this->response);
-                $step->createAnswer();
+                $step->generateAnswer();
+                break;
+            // First step but with subarguments: we must edit the original one
+            case 'step=1':
+                $this->createEditableMessage();
+                $step = new Step1($this->logger, $this->response);
+                $step->generateAnswer();
                 break;
             case 'step=2':
-                $this->response = new EditMessageText();
-                $this->response->chat_id = $this->chatId;
-                $this->response->message_id = $this->message->message_id;
-
+                $this->createEditableMessage();
                 $step = new Step2($this->logger, $this->response);
                 $step->setNotifyUrl($this->constructNotifyUrl());
-                $step->createAnswer();
+                $step->generateAnswer();
                 break;
             case 'step=3':
-                // TODO
+                $this->createEditableMessage();
+                $step = new Step3($this->logger, $this->response);
+                $step->generateAnswer();
+                break;
             default:
                 $this->logger->error('Invalid step detected!', [
                     'botCommand' => $this->botCommand,
@@ -285,6 +292,15 @@ class UptimeMonitorBot extends Base {
         if (empty($this->monitor)) {
             throw new InvalidRequest('Invalid incoming UUID detected: '.$uuid);
         }
+
+        return $this;
+    }
+
+    private function createEditableMessage(): UptimeMonitorBot
+    {
+        $this->response = new EditMessageText();
+        $this->response->message_id = $this->message->message_id;
+        $this->response->chat_id = $this->chatId;
 
         return $this;
     }

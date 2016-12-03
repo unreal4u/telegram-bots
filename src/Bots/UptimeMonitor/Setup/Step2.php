@@ -20,11 +20,12 @@ class Step2 extends Common {
         return $this;
     }
 
-    public function createAnswer(): TelegramMethods
+    public function generateAnswer(): TelegramMethods
     {
         $this->response->text = sprintf(
             'Great! Now you can go to "My Settings" and add an alert contact. Select a "Web-Hook" type and insert the '.
-            'following URL into "URL to Notify": `%s`%s%s',
+            'following URL into "URL to Notify", include the question mark at the end and ensure that the option '.
+            '"Send as JSON (application/json)" is **unchecked**: `%s`. Finally, click on "Create Alert Contact".%s%s',
             $this->notifyUrl,
             PHP_EOL.PHP_EOL,
             'Have you created the alert contact?'
@@ -37,7 +38,7 @@ class Step2 extends Common {
 
         $inlineKeyboardBackButton = new Button();
         $inlineKeyboardBackButton->text = 'Back to step 1';
-        $inlineKeyboardBackButton->callback_data = 'setup';
+        $inlineKeyboardBackButton->callback_data = 'setup?step=1';
         $this->logger->debug('Created inlineKeyboardBackButton');
 
         $inlineKeyboardMarkup = new Markup();
