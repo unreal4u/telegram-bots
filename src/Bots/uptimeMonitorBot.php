@@ -209,6 +209,8 @@ class UptimeMonitorBot extends Base {
             // No subarguments? We are in the first step, so return a simple message to begin with the rest
             case '':
                 $this->createSimpleMessageStub();
+                // Do not include a reply_to_message_id in this series, it's only annoying
+                $this->response->reply_to_message_id = null;
                 $step = new Step1($this->logger, $this->response);
                 $step->generateAnswer();
                 break;
