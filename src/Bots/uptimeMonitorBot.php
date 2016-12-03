@@ -238,6 +238,11 @@ class UptimeMonitorBot extends Base {
         } else {
             $this->createEditableMessage();
         }
+
+        // Hack: define a default action
+        if (!isset($this->subArguments['step'])) {
+            $this->subArguments['step'] = '1';
+        }
         // Do not include a reply_to_message_id in this series, it's only annoying
         $this->response->reply_to_message_id = null;
 
