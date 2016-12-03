@@ -42,4 +42,9 @@ class BaseMock extends Base
     {
         return $this->updateObject;
     }
+
+    public function validSubcommands(): array
+    {
+        return [];
+    }
 }

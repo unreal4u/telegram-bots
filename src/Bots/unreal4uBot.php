@@ -140,4 +140,9 @@ class unreal4uBot extends Base
 
         return $sendMessage;
     }
+
+    public function validSubcommands(): array
+    {
+        return [];
+    }
 }

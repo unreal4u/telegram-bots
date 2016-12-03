@@ -57,7 +57,7 @@ abstract class Base implements Bots {
     protected $botCommand = '';
 
     /**
-     * Handy shortcut
+     * Arguments passed on to the request. This can contain malicious data, so act with cuation!
      * @var string
      */
     protected $subArguments = '';
@@ -114,6 +114,72 @@ abstract class Base implements Bots {
     }
 
     /**
+     * Assigns the basic stuff if the incoming Update object refers to a inline query
+     *
+     * @param TelegramTypes $telegramType
+     * @return Base
+     */
+    final private function handleSpecialCases(TelegramTypes $telegramType): Base
+    {
+        // TODO Complete development of these kind of messages
+        /** @var ChosenResult $telegramType */
+        $this->userId = $telegramType->from->id;
+        return $this;
+    }
+
+    /**
+     * Assigns the basic stuff if the incoming Update object refers to a CallbackQuery
+     *
+     * @param CallbackQuery $telegramType
+     * @return Base
+     */
+    final private function handleCallbackQuery(CallbackQuery $telegramType): Base
+    {
+        $this->userId = $telegramType->from->id;
+        // A callback query can also originate from a inline bot result, in that case, Message isn't set
+        if (!empty($telegramType->message)) {
+            $this->message = $telegramType->message;
+            $this->entities = $telegramType->message->entities;
+            $this->chatId = $telegramType->message->chat->id;
+        }
+
+        /*
+         * In the case of our bots, we'll always send some parameters with data, the first of which is the botCommand
+         * and the second will always be some subArguments.
+         *
+         * Please note that this data isn't safe, as it can be manipulated by the UA
+         * @see https://core.telegram.org/bots/api#callbackquery
+         */
+        if (!empty($telegramType->data)) {
+            $parsedUrl = parse_url($telegramType->data);
+            if (in_array($parsedUrl['path'], $this->validSubcommands())) {
+                $this->botCommand = $parsedUrl['path'];
+                $this->subArguments = $parsedUrl['query'];
+            }
+        }
+        // Once we have the basic values we need to continue, break out of the loop
+        return $this;
+    }
+
+    /**
+     * Assigns the basic stuff if the incoming Update object refers to a Message
+     *
+     * @param Message $telegramType
+     * @return Base
+     */
+    final private function handleMessageObject(Message $telegramType): Base
+    {
+        $this->message = $telegramType;
+        $this->entities = $telegramType->entities;
+        $this->chatId = $telegramType->chat->id;
+        $this->userId = $telegramType->from->id;
+        $this->extractBotCommand();
+        // Once we have the basic values we need to continue, break out of the loop
+
+        return $this;
+    }
+
+    /**
      * Decomposes the incoming update object into subparts we can actually use
      *
      * At most one of the optional parameters can be present in any given update
@@ -136,26 +202,14 @@ abstract class Base implements Bots {
     {
         foreach ($this->updateObject as $telegramTypeName => $telegramType) {
             if ($telegramType instanceof Query || $telegramType instanceof ChosenResult) {
-                // TODO There are a lot of things to do for this kind of messages, but no examples at hand right now
-                $this->userId = $telegramType->from->id;
+                $this->handleSpecialCases($telegramType);
                 throw new \Exception('To be implemented...');
-            } elseif ($telegramType instanceof CallbackQuery) {
-                // A callback query can also originate from a inline bot result, in that case, Message isn't set
-                $this->userId = $telegramType->from->id;
-                if (!empty($telegramType->message)) {
-                    $this->message = $telegramType->message;
-                    $this->entities = $telegramType->message->entities;
-                    $this->chatId = $telegramType->message->chat->id;
-                }
-                // Once we have the basic values we need to continue, break out of the loop
                 break;
-            } elseif (is_object($telegramType)) {
-                $this->message = $telegramType;
-                $this->entities = $telegramType->entities;
-                $this->chatId = $telegramType->chat->id;
-                $this->userId = $telegramType->from->id;
-                $this->extractBotCommand();
-                // Once we have the basic values we need to continue, break out of the loop
+            } elseif ($telegramType instanceof CallbackQuery) {
+                $this->handleCallbackQuery($telegramType);
+                break;
+            } elseif ($telegramType instanceof Message) {
+                $this->handleMessageObject($telegramType);
                 break;
             } else {
                 if (!empty($telegramType) && $telegramTypeName !== 'update_id') {

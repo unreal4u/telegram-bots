@@ -145,4 +145,15 @@ class TheTimeBot extends Base
 
         return $theTime;
     }
+
+    public function validSubcommands(): array
+    {
+        return [
+            'start',
+            'help',
+            'getTimeByLocation',
+            'get_time_for_timezone',
+            'set_display_format',
+        ];
+    }
 }

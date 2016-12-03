@@ -25,4 +25,10 @@ interface Bots
      * @return TelegramMethods
      */
     public function createAnswer(array $postData = []): TelegramMethods;
+
+    /**
+     * Returns an array with valid subcommands for the bot
+     * @return array
+     */
+    public function validSubcommands(): array;
 }

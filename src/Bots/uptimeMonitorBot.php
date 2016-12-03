@@ -11,6 +11,7 @@ use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step1;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step2;
 use unreal4u\TelegramBots\Exceptions\InvalidRequest;
 use unreal4u\TelegramBots\Exceptions\InvalidSetupRequest;
 use unreal4u\TelegramBots\Models\Entities\Events;
@@ -199,7 +200,7 @@ class UptimeMonitorBot extends Base {
         return $this->response;
     }
 
-    protected function setup(): SendMessage
+    protected function setup(): TelegramMethods
     {
         $this->logger->debug('[CMD] Inside SETUP');
 
@@ -210,11 +211,16 @@ class UptimeMonitorBot extends Base {
                 $step = new Step1($this->logger, $this->response);
                 $step->createAnswer();
                 break;
-            case 'step2':
-                #$this->response = new AnswerCallbackQuery();
-                // Edit the previous message? or maybe send an entire new message? not sure yet, I'll have to try out
+            case 'step=2':
                 $this->response = new EditMessageText();
+                $this->response->chat_id = $this->chatId;
+
+                $step = new Step2($this->logger, $this->response);
+                $step->setNotifyUrl($this->monitor->getNotifyUrl());
+                $step->createAnswer();
                 break;
+            case 'step=3':
+                // TODO
             default:
                 $this->logger->error('Invalid step detected!', [
                     'botCommand' => $this->botCommand,
@@ -275,5 +281,20 @@ class UptimeMonitorBot extends Base {
         }
 
         return $this;
+    }
+
+    /**
+     * Returns an array with valid subcommands for the bot
+     * @return array
+     */
+    public function validSubcommands(): array
+    {
+        return [
+            'start',
+            'setup',
+            'get_notify_url',
+            'regenerate_notify_url',
+            'help',
+        ];
     }
 }
