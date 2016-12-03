@@ -130,6 +130,9 @@ abstract class Base implements Bots {
     /**
      * Assigns the basic stuff if the incoming Update object refers to a CallbackQuery
      *
+     * This is quite tricky because we use the specific data fields to know in which part of the process we actually
+     * are, but this data can't be trusted and therefor we must manually check it.
+     *
      * @param CallbackQuery $telegramType
      * @return Base
      */
@@ -173,8 +176,8 @@ abstract class Base implements Bots {
         $this->entities = $telegramType->entities;
         $this->chatId = $telegramType->chat->id;
         $this->userId = $telegramType->from->id;
+        // We are now ready to get to know what the actual sent command was
         $this->extractBotCommand();
-        // Once we have the basic values we need to continue, break out of the loop
 
         return $this;
     }
@@ -204,12 +207,15 @@ abstract class Base implements Bots {
             if ($telegramType instanceof Query || $telegramType instanceof ChosenResult) {
                 $this->handleSpecialCases($telegramType);
                 throw new \Exception('To be implemented...');
+                // Once we have the basic values we need to continue, break out of the loop ASAP
                 break;
             } elseif ($telegramType instanceof CallbackQuery) {
                 $this->handleCallbackQuery($telegramType);
+                // Once we have the basic values we need to continue, break out of the loop ASAP
                 break;
             } elseif ($telegramType instanceof Message) {
                 $this->handleMessageObject($telegramType);
+                // Once we have the basic values we need to continue, break out of the loop ASAP
                 break;
             } else {
                 if (!empty($telegramType) && $telegramTypeName !== 'update_id') {
@@ -219,6 +225,7 @@ abstract class Base implements Bots {
                     ]);
                     throw new InvalidUpdateObject('Impossible condition detected or faulty update message...');
                 }
+                // Exception to the rule: do NOT break out of the loop and check the rest
             }
         }
 
@@ -280,6 +287,7 @@ abstract class Base implements Bots {
      */
     final private function extractBotCommand(): Base
     {
+        // The entities will contain information about the sent botCommand, so check that
         foreach ($this->message->entities as $entity) {
             if ($entity->type == 'bot_command') {
                 $this->botCommand = substr($this->message->text, $entity->offset + 1, $entity->length);

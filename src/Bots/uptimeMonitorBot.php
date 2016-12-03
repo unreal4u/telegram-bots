@@ -68,6 +68,14 @@ class UptimeMonitorBot extends Base {
         }
     }
 
+    /**
+     * Handles off a webhook coming from uptimerobot.com
+     *
+     * @param array $rawData
+     * @param string $incomingUuid
+     * @return EventManager
+     * @throws InvalidRequest
+     */
     public function handleUptimeMonitorNotification(array $rawData, string $incomingUuid): EventManager
     {
         $this->setupDatabaseSettings('UptimeMonitorBot');
@@ -102,6 +110,12 @@ class UptimeMonitorBot extends Base {
         return $this;
     }
 
+    /**
+     * Logic behind the creation of a new Event, either up or down
+     *
+     * @param Events $event
+     * @return TelegramMethods
+     */
     private function createNotificationMessage(Events $event): TelegramMethods
     {
         $this->monitor = $this->db
@@ -128,7 +142,7 @@ class UptimeMonitorBot extends Base {
     }
 
     /**
-     * Because the message is so large, make it an apart function
+     * When a site goes down, notify the corresponding user
      *
      * @param Events $event
      * @return string
@@ -148,6 +162,11 @@ class UptimeMonitorBot extends Base {
         );
     }
 
+    /**
+     * When the site is back up, notify the corresponding user
+     *
+     * @return string
+     */
     private function messageSiteIsUp(Events $event): string
     {
         $this->logger->info('Generating UP message');
@@ -168,8 +187,7 @@ class UptimeMonitorBot extends Base {
     }
 
     /**
-     * Execution of this command
-     *
+     * Action to execute when botCommand is set
      * @return SendMessage
      */
     protected function start(): SendMessage
@@ -189,6 +207,10 @@ class UptimeMonitorBot extends Base {
         return $this->response;
     }
 
+    /**
+     * Action to execute when botCommand is set
+     * @return SendMessage
+     */
     protected function help(): SendMessage
     {
         $this->logger->debug('[CMD] Inside HELP');
@@ -201,6 +223,11 @@ class UptimeMonitorBot extends Base {
         return $this->response;
     }
 
+    /**
+     * Action to execute when botCommand is set
+     * @return TelegramMethods
+     * @throws InvalidSetupRequest
+     */
     protected function setup(): TelegramMethods
     {
         $this->logger->debug('[CMD] Inside SETUP');
@@ -231,6 +258,8 @@ class UptimeMonitorBot extends Base {
                 $step = new Step3($this->logger, $this->response);
                 $step->generateAnswer();
                 break;
+            case 'showPicture=true':
+                break;
             default:
                 $this->logger->error('Invalid step detected!', [
                     'botCommand' => $this->botCommand,
@@ -243,6 +272,9 @@ class UptimeMonitorBot extends Base {
         return $this->response;
     }
 
+    /**
+     * @return SendMessage
+     */
     protected function getNotifyUrl(): SendMessage
     {
         $this->logger->debug('[CMD] Inside GETNOTIFYURL');
@@ -257,6 +289,9 @@ class UptimeMonitorBot extends Base {
         return $this->response;
     }
 
+    /**
+     * @return string
+     */
     private function constructNotifyUrl(): string
     {
         return sprintf('https://telegram.unreal4u.com/UptimeMonitorBot/%s?', $this->monitor->getNotifyUrl());
@@ -298,6 +333,11 @@ class UptimeMonitorBot extends Base {
         return $this;
     }
 
+    /**
+     * Creates an EditMessageText object instead of a SendMessage
+     *
+     * @return UptimeMonitorBot
+     */
     private function createEditableMessage(): UptimeMonitorBot
     {
         $this->response = new EditMessageText();

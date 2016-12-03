@@ -5,6 +5,8 @@ declare(strict_types = 1);
 namespace unreal4u\TelegramBots\Bots\UptimeMonitor\Setup;
 
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
+use unreal4u\TelegramAPI\Telegram\Methods\SendPhoto;
+use unreal4u\TelegramAPI\Telegram\Types\Custom\InputFile;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
 
@@ -14,10 +16,33 @@ class Step2 extends Common {
      */
     private $notifyUrl = '';
 
+    /**
+     * @param string $notifyUrl
+     * @return Step2
+     */
     public function setNotifyUrl(string $notifyUrl): Step2
     {
         $this->notifyUrl = $notifyUrl;
         return $this;
+    }
+
+    /**
+     * @return SendPhoto
+     */
+    public function generatePhotoAnswer(): SendPhoto
+    {
+        $this->response = new SendPhoto();
+        $this->response->reply_markup = $this->getInlineKeyboardMarkup();
+        $this->response->caption = sprintf(
+            '%s%s',
+            '- Click on "My Settings"'.PHP_EOL,
+            '- Select "Web-Hook"'.PHP_EOL,
+            '- Insert `'.$this->notifyUrl.'` in "URL to Notify"'.PHP_EOL,
+            '- Ensure "Send as JSON" is unchecked'.PHP_EOL
+        );
+        $this->response->photo = new InputFile('media/add-monitor.png');
+
+        return $this->response;
     }
 
     public function generateAnswer(): TelegramMethods
@@ -31,8 +56,21 @@ class Step2 extends Common {
             'Have you created the alert contact?'
         );
 
+        $this->response->disable_web_page_preview = true;
+        $this->response->parse_mode = 'Markdown';
+        $this->response->reply_markup = $this->getInlineKeyboardMarkup();
+        $this->logger->debug('Response ready');
+
+        return $this->response;
+    }
+
+    /**
+     * @return Markup
+     */
+    private function getInlineKeyboardMarkup(): Markup
+    {
         $inlineKeyboardButton = new Button();
-        $inlineKeyboardButton->text = 'Yes, take me to the next step!';
+        $inlineKeyboardButton->text = 'Yes, next step!';
         $inlineKeyboardButton->callback_data = 'setup?step=3';
         $this->logger->debug('Created inlineKeyboardButton');
 
@@ -47,15 +85,11 @@ class Step2 extends Common {
         $this->logger->debug('Created inlineKeyboardShowPicButton');
 
         $inlineKeyboardMarkup = new Markup();
-        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardButton, $inlineKeyboardBackButton];
+        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardButton];
+        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardBackButton];
         $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardShowPicButton];
         $this->logger->debug('Created inlineKeyboardMarkup configuration');
 
-        $this->response->disable_web_page_preview = true;
-        $this->response->parse_mode = 'Markdown';
-        $this->response->reply_markup = $inlineKeyboardMarkup;
-        $this->logger->debug('Response ready');
-
-        return $this->response;
+        return $inlineKeyboardMarkup;
     }
 }
