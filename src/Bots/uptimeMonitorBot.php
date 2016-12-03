@@ -9,6 +9,7 @@ use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Methods\SendPhoto;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step1;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step2;
@@ -259,6 +260,9 @@ class UptimeMonitorBot extends Base {
                 $step->generateAnswer();
                 break;
             case 'showPicture=true':
+                $this->response = new SendPhoto();
+                $step = new Step2($this->logger, $this->response);
+                $this->response = $step->generatePhotoAnswer();
                 break;
             default:
                 $this->logger->error('Invalid step detected!', [

@@ -31,7 +31,6 @@ class Step2 extends Common {
      */
     public function generatePhotoAnswer(): SendPhoto
     {
-        $this->response = new SendPhoto();
         $this->response->reply_markup = $this->getInlineKeyboardMarkup();
         $this->response->caption = sprintf(
             '%s%s',
