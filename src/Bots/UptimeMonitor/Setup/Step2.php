@@ -31,7 +31,6 @@ class Step2 extends Common {
      */
     public function generatePhotoAnswer(): SendPhoto
     {
-        $this->response->reply_markup = $this->getInlineKeyboardMarkup();
         $this->response->caption = sprintf(
             '%s%s%s%s%s',
             '• Click on "My Settings"'.PHP_EOL,
@@ -41,6 +40,7 @@ class Step2 extends Common {
             '• Ensure "Send as JSON" is unchecked'.PHP_EOL
         );
         $this->response->photo = new InputFile('media/add-monitor.png');
+        $this->response->reply_markup = $this->getInlineKeyboardMarkup(false);
 
         return $this->response;
     }
@@ -56,9 +56,18 @@ class Step2 extends Common {
             'Have you created the alert contact?'
         );
 
+        // Show the picture must not be shown when displaying the picture, only when displaying the text only version
+        $inlineKeyboardShowPicButton = new Button();
+        $inlineKeyboardShowPicButton->text = 'Just show me a picture';
+        $inlineKeyboardShowPicButton->callback_data = 'setup?step=2-picture';
+        $this->logger->debug('Created inlineKeyboardShowPicButton');
+
         $this->response->disable_web_page_preview = true;
         $this->response->parse_mode = 'Markdown';
-        $this->response->reply_markup = $this->getInlineKeyboardMarkup();
+
+        $inlineKeyboardMarkup = $this->getInlineKeyboardMarkup();
+        $inlineKeyboardMarkup->inline_keyboard[] = $inlineKeyboardShowPicButton;
+        $this->response->reply_markup = $inlineKeyboardMarkup;
         $this->logger->debug('Response ready');
 
         return $this->response;
@@ -67,29 +76,23 @@ class Step2 extends Common {
     /**
      * @return Markup
      */
-    private function getInlineKeyboardMarkup(): Markup
+    private function getInlineKeyboardMarkup(bool $createEditableMessage = true): Markup
     {
         $inlineKeyboardButton = new Button();
         $inlineKeyboardButton->text = 'Yes, next step!';
-        $inlineKeyboardButton->callback_data = 'setup?step=3';
+        $inlineKeyboardButton->callback_data = 'setup?step=3'.empty($createEditableMessage) ? '&newMsg=true' : '';
         $this->logger->debug('Created inlineKeyboardButton');
 
         $inlineKeyboardBackButton = new Button();
         $inlineKeyboardBackButton->text = 'Back to step 1';
-        $inlineKeyboardBackButton->callback_data = 'setup?step=1';
+        $inlineKeyboardBackButton->callback_data = 'setup?step=1'.empty($createEditableMessage) ? '&newMsg=true' : '';
         $this->logger->debug('Created inlineKeyboardBackButton');
-
-        $inlineKeyboardShowPicButton = new Button();
-        $inlineKeyboardShowPicButton->text = 'Just show me a picture';
-        $inlineKeyboardShowPicButton->callback_data = 'setup?showPicture=true';
-        $this->logger->debug('Created inlineKeyboardShowPicButton');
 
         $inlineKeyboardMarkup = new Markup();
         $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardButton];
         $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardBackButton];
-        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardShowPicButton];
-        $this->logger->debug('Created inlineKeyboardMarkup configuration');
 
+        $this->logger->debug('Created inlineKeyboardMarkup configuration');
         return $inlineKeyboardMarkup;
     }
 }

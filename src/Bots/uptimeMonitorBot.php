@@ -233,37 +233,34 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->debug('[CMD] Inside SETUP');
 
-        switch ($this->subArguments) {
-            // No subarguments? We are in the first step, so return a simple message to begin with the rest
-            case '':
-                $this->createSimpleMessageStub();
-                // Do not include a reply_to_message_id in this series, it's only annoying
-                $this->response->reply_to_message_id = null;
+        if (isset($this->subArguments['newMsg']) || !isset($this->subArguments['step'])) {
+            $this->createSimpleMessageStub();
+        } else {
+            $this->createEditableMessage();
+        }
+        // Do not include a reply_to_message_id in this series, it's only annoying
+        $this->response->reply_to_message_id = null;
+
+        switch ($this->subArguments['step']) {
+            case '1':
                 $step = new Step1($this->logger, $this->response);
                 $step->generateAnswer();
                 break;
-            // First step but with subarguments: we must edit the original one
-            case 'step=1':
-                $this->createEditableMessage();
-                $step = new Step1($this->logger, $this->response);
-                $step->generateAnswer();
-                break;
-            case 'step=2':
-                $this->createEditableMessage();
+            case '2':
                 $step = new Step2($this->logger, $this->response);
                 $step->setNotifyUrl($this->constructNotifyUrl());
                 $step->generateAnswer();
                 break;
-            case 'step=3':
-                $this->createEditableMessage();
-                $step = new Step3($this->logger, $this->response);
-                $step->generateAnswer();
-                break;
-            case 'showPicture=true':
+            case '2-picture':
                 $this->response = new SendPhoto();
                 $this->response->chat_id = $this->chatId;
                 $step = new Step2($this->logger, $this->response);
+                $step->setNotifyUrl($this->constructNotifyUrl());
                 $this->response = $step->generatePhotoAnswer();
+                break;
+            case '3':
+                $step = new Step3($this->logger, $this->response);
+                $step->generateAnswer();
                 break;
             default:
                 $this->logger->error('Invalid step detected!', [

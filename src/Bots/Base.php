@@ -57,10 +57,10 @@ abstract class Base implements Bots {
     protected $botCommand = '';
 
     /**
-     * Arguments passed on to the request. This can contain malicious data, so act with cuation!
-     * @var string
+     * Arguments passed on to the request. This can contain malicious data, so act with caution!
+     * @var array
      */
-    protected $subArguments = '';
+    protected $subArguments = [];
 
     /**
      * @var Update
@@ -157,7 +157,7 @@ abstract class Base implements Bots {
             $parsedUrl = parse_url($telegramType->data);
             if (in_array($parsedUrl['path'], $this->validSubcommands())) {
                 $this->botCommand = $parsedUrl['path'];
-                $this->subArguments = $parsedUrl['query'];
+                parse_str($parsedUrl['query'], $this->subArguments);
             }
         }
         // Once we have the basic values we need to continue, break out of the loop
@@ -296,7 +296,7 @@ abstract class Base implements Bots {
                     $this->botCommand = substr($this->botCommand, 0, strpos($this->botCommand, '@'));
                 }
 
-                $this->subArguments = substr($this->message->text, $entity->offset + $entity->length + 1);
+                $this->subArguments[] = substr($this->message->text, $entity->offset + $entity->length + 1);
             }
         }
 
