@@ -66,7 +66,7 @@ class Step2 extends Common {
         $this->response->parse_mode = 'Markdown';
 
         $inlineKeyboardMarkup = $this->getInlineKeyboardMarkup();
-        $inlineKeyboardMarkup->inline_keyboard[] = $inlineKeyboardShowPicButton;
+        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardShowPicButton];
         $this->response->reply_markup = $inlineKeyboardMarkup;
         $this->logger->debug('Response ready');
 
