@@ -67,7 +67,8 @@ class RequestHandler {
             $bot->sendResponse();
             $this->botLogger->debug('Sent a response to Telegram servers, work is done');
         } catch (\Exception $e) {
-            $this->logger->error(sprintf('Captured exception: "%s" for bot %s', $e->getMessage(), $currentBot));
+            // Log in the specific bot logger instead of general log
+            $this->botLogger->error(sprintf('Captured exception: "%s" for bot %s', $e->getMessage(), $currentBot));
         }
 
         return true;

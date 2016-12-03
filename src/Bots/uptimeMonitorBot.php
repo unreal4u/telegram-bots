@@ -214,6 +214,7 @@ class UptimeMonitorBot extends Base {
             case 'step=2':
                 $this->response = new EditMessageText();
                 $this->response->chat_id = $this->chatId;
+                $this->response->message_id = $this->message->message_id;
 
                 $step = new Step2($this->logger, $this->response);
                 $step->setNotifyUrl($this->monitor->getNotifyUrl());
