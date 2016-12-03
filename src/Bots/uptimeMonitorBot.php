@@ -217,7 +217,7 @@ class UptimeMonitorBot extends Base {
                 $this->response->message_id = $this->message->message_id;
 
                 $step = new Step2($this->logger, $this->response);
-                $step->setNotifyUrl($this->monitor->getNotifyUrl());
+                $step->setNotifyUrl($this->constructNotifyUrl());
                 $step->createAnswer();
                 break;
             case 'step=3':
@@ -242,10 +242,15 @@ class UptimeMonitorBot extends Base {
         }
 
         $this->response->text .= sprintf(
-            'Fill in the following url in the box: `https://telegram.unreal4u.com/UptimeMonitorBot/%s?`',
-            $this->monitor->getNotifyUrl()
+            'Fill in the following url in the box: `%s?`',
+            $this->constructNotifyUrl()
         );
         return $this->response;
+    }
+
+    private function constructNotifyUrl(): string
+    {
+        return sprintf('https://telegram.unreal4u.com/UptimeMonitorBot/%s?', $this->monitor->getNotifyUrl());
     }
 
     /**
