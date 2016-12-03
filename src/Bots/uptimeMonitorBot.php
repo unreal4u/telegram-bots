@@ -261,6 +261,7 @@ class UptimeMonitorBot extends Base {
                 break;
             case 'showPicture=true':
                 $this->response = new SendPhoto();
+                $this->response->chat_id = $this->chatId;
                 $step = new Step2($this->logger, $this->response);
                 $this->response = $step->generatePhotoAnswer();
                 break;
