@@ -41,8 +41,14 @@ class Step2 extends Common {
         $inlineKeyboardBackButton->callback_data = 'setup?step=1';
         $this->logger->debug('Created inlineKeyboardBackButton');
 
+        $inlineKeyboardShowPicButton = new Button();
+        $inlineKeyboardShowPicButton->text = 'Just show me a picture';
+        $inlineKeyboardShowPicButton->callback_data = 'setup?showPicture=true';
+        $this->logger->debug('Created inlineKeyboardShowPicButton');
+
         $inlineKeyboardMarkup = new Markup();
         $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardButton, $inlineKeyboardBackButton];
+        $inlineKeyboardMarkup->inline_keyboard[] = [$inlineKeyboardShowPicButton];
         $this->logger->debug('Created inlineKeyboardMarkup configuration');
 
         $this->response->disable_web_page_preview = true;
