@@ -34,9 +34,9 @@ class Step2 extends Common {
         $this->response->caption = sprintf(
             '%s%s%s%s%s',
             '• Click on "My Settings"'.PHP_EOL,
-            '• Scroll midway and click on "Add Alert Contact'.PHP_EOL,
+            '• Scroll midway and click on "Add Alert Contact"'.PHP_EOL,
             '• Select "Web-Hook"'.PHP_EOL,
-            '• Insert `'.$this->notifyUrl.'` in "URL to Notify"'.PHP_EOL,
+            '• Insert above URL in "URL to Notify"'.PHP_EOL,
             '• Ensure "Send as JSON" is unchecked'.PHP_EOL
         );
         $this->response->photo = new InputFile('media/add-monitor.png');
