@@ -33,7 +33,7 @@ class Step2 extends Common {
     {
         $this->response->reply_markup = $this->getInlineKeyboardMarkup();
         $this->response->caption = sprintf(
-            '%s%s',
+            '%s%s%s%s',
             '- Click on "My Settings"'.PHP_EOL,
             '- Select "Web-Hook"'.PHP_EOL,
             '- Insert `'.$this->notifyUrl.'` in "URL to Notify"'.PHP_EOL,
