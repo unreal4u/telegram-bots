@@ -78,14 +78,19 @@ class Step2 extends Common {
      */
     private function getInlineKeyboardMarkup(bool $createEditableMessage = true): Markup
     {
+        $callbackData = 'setup?step=%d';
+        if (empty($createEditableMessage)) {
+            $callbackData .= '&newMsg=true';
+        }
+
         $inlineKeyboardButton = new Button();
         $inlineKeyboardButton->text = 'Yes, next step!';
-        $inlineKeyboardButton->callback_data = 'setup?step=3'.empty($createEditableMessage) ? '&newMsg=true' : '';
+        $inlineKeyboardButton->callback_data = sprintf($callbackData, 3);
         $this->logger->debug('Created inlineKeyboardButton');
 
         $inlineKeyboardBackButton = new Button();
         $inlineKeyboardBackButton->text = 'Back to step 1';
-        $inlineKeyboardBackButton->callback_data = 'setup?step=1'.empty($createEditableMessage) ? '&newMsg=true' : '';
+        $inlineKeyboardBackButton->callback_data = sprintf($callbackData, 1);
         $this->logger->debug('Created inlineKeyboardBackButton');
 
         $inlineKeyboardMarkup = new Markup();
