@@ -187,7 +187,7 @@ class UptimeMonitorBot extends Base {
         }
 
         return sprintf(
-            '%s The site %s is back up again, happy surfing! :)',
+            '%s %s is back up again, happy surfing!',
             "\xF0\x9F\x94\xB5",
             $event->getUrMonitorUrl()
         );
