@@ -166,6 +166,7 @@ class UptimeMonitorBot extends Base {
     /**
      * When the site is back up, notify the corresponding user
      *
+     * @param Events $event
      * @return string
      */
     private function messageSiteIsUp(Events $event): string
@@ -215,10 +216,14 @@ class UptimeMonitorBot extends Base {
     protected function help(): SendMessage
     {
         $this->logger->debug('[CMD] Inside HELP');
-        $messageText  = _(sprintf('Your notifyUrl is: %s', self::botBaseUrl.$this->monitor->getNotifyUrl())).PHP_EOL;
+        $messageText  = _(sprintf('Your notifyUrl is: %s', $this->constructNotifyUrl())).PHP_EOL;
         $messageText .= _('The available commands are: ').PHP_EOL;
         $messageText .= _('`setup`: Guides you through the setup of a new monitor').PHP_EOL;
-        $messageText .= _('`get_notify_url`: Will return the callback url to be filled in in https://uptimerobot.com');
+        $messageText .= _(sprintf(
+            '`get_notify_url`: Will return the callback url to be filled in in %s',
+            'https://uptimerobot.com'
+        )).PHP_EOL;
+        $messageText .= _('`regenerate_notify_url`: Will regenerate the Notification URL, invalidates previous URL');
 
         $this->response->text .= $messageText;
         return $this->response;
@@ -290,7 +295,7 @@ class UptimeMonitorBot extends Base {
         }
 
         $this->response->text .= sprintf(
-            'Fill in the following url in the box: `%s?`',
+            'Fill in the following url in the box: `%s`',
             $this->constructNotifyUrl()
         );
         return $this->response;
@@ -301,7 +306,7 @@ class UptimeMonitorBot extends Base {
      */
     private function constructNotifyUrl(): string
     {
-        return sprintf('https://telegram.unreal4u.com/UptimeMonitorBot/%s?', $this->monitor->getNotifyUrl());
+        return sprintf('%s%s?', self::botBaseUrl, $this->monitor->getNotifyUrl());
     }
 
     /**
