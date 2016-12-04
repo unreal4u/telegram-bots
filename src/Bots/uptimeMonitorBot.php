@@ -152,7 +152,8 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->info('Generating DOWN message');
         return sprintf(
-            '\\U0001F534 Attention! Site [%s](%s) is currently *down*!%sAlert details: *%s*%sDate of incident: *%s UTC*%s',
+            '%s Attention! Site [%s](%s) is currently *down*!%sAlert details: *%s*%sDate of incident: *%s UTC*%s',
+            "\xF0\x9F\x94\xB4",
             $event->getUrMonitorUrl(),
             $event->getUrMonitorUrl(),
             PHP_EOL,
@@ -185,7 +186,11 @@ class UptimeMonitorBot extends Base {
             $this->response->reply_to_message_id = $previousEvent->getTelegramMessageId();
         }
 
-        return sprintf('\\U0001F535 The site %s is back up again, happy surfing! :)', $event->getUrMonitorUrl());
+        return sprintf(
+            '%s The site %s is back up again, happy surfing! :)',
+            "\xF0\x9F\x94\xB5",
+            $event->getUrMonitorUrl()
+        );
     }
 
     /**
