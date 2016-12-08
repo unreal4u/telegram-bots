@@ -65,6 +65,17 @@ class Monitors
     protected $monitorAPIKey = null;
 
     /**
+     * Lock this monitor so that only the user that added the bot can perform administrative stuff
+     *
+     * For now, "Administrive stuff" is limited to operations such as regenerate the notification URL. Maybe there will
+     * be more stuff to add to this list in the future
+     *
+     * @var bool
+     * @Column(type="boolean")
+     */
+    protected $isUserLocked = false;
+
+    /**
      * @param int $chatId
      * @return Monitors
      */

@@ -22,7 +22,8 @@ use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 use unreal4u\TelegramBots\DatabaseWrapper;
 use unreal4u\TelegramBots\Exceptions\InvalidUpdateObject;
 
-abstract class Base implements Bots {
+abstract class Base implements Bots
+{
     /**
      * @var LoggerInterface
      */
@@ -57,7 +58,7 @@ abstract class Base implements Bots {
     protected $botCommand = '';
 
     /**
-     * Arguments passed on to the request. This can contain malicious data, so act with caution!
+     * Arguments passed on to the request. Can contain malicious data, so act with caution!
      * @var array
      */
     protected $subArguments = [];
@@ -87,8 +88,12 @@ abstract class Base implements Bots {
      */
     protected $entities = null;
 
-    final public function __construct(LoggerInterface $logger, string $token, Client $client = null)
-    {
+    final public function __construct(
+        LoggerInterface $logger,
+        string $token,
+        Client $client = null,
+        EntityManager $db = null
+    ) {
         $this->logger = $logger;
         $this->token = $token;
         // If no client provided, create a new instance of a client
@@ -97,6 +102,8 @@ abstract class Base implements Bots {
         }
 
         $this->HTTPClient = $client;
+
+        $this->db = $db;
     }
 
     /**

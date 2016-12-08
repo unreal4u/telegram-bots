@@ -1,10 +1,10 @@
-default_connection: mysql
-mysql:
-    name: mysqlStorage
+default_connection: default
+default:
+    name: storage
     driver: pdo_mysql
     dbhost: localhost
-    dbuser: telegrambot
-    dbpass: telegrambot
+    dbuser: xxx
+    dbpass: yyy
     dbname: telegrambots
     charset: utf8mb4
     default_table_options:

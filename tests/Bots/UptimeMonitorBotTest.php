@@ -11,7 +11,8 @@ use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramBots\Bots\UptimeMonitorBot;
 use unreal4u\TelegramBots\Tests\bootstrap;
 
-class UptimeMonitorBotTest extends TestCase {
+class UptimeMonitorBotTest extends TestCase
+{
     /**
      * @var UptimeMonitorBot
      */
@@ -26,9 +27,16 @@ class UptimeMonitorBotTest extends TestCase {
     {
         parent::setUp();
         $this->bootstrap = new bootstrap();
-        $this->bootstrap->setUpLogger();
+        $this->bootstrap
+            ->setUpLogger()
+            ->setupSQLiteDatabase();
 
-        $this->wrapper = new UptimeMonitorBot($this->bootstrap->getLogger(), '123456');
+        $this->wrapper = new UptimeMonitorBot(
+            $this->bootstrap->getLogger(),
+            '123456',
+            null,
+            $this->bootstrap->getEntityManager()
+        );
         $this->bootstrap->setupBot($this->wrapper);
     }
 
@@ -44,6 +52,7 @@ class UptimeMonitorBotTest extends TestCase {
         $this->assertNotEmpty($return->chat_id);
     }
 
+    /*
     public function testHelpCommand()
     {
         $this->markTestIncomplete('TODO');
@@ -58,6 +67,8 @@ class UptimeMonitorBotTest extends TestCase {
     {
         $this->markTestIncomplete('TODO');
     }
+
+    */
 
     public function testNewChatMember()
     {

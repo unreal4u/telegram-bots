@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace unreal4u\TelegramBots\Bots\tests;
 
 use PHPUnit_Framework_TestCase as TestCase;
+use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramBots\Tests\bootstrap;
 use unreal4u\TelegramBots\tests\Mock\BaseMock;
 
@@ -24,8 +25,10 @@ class BaseTest extends TestCase
     {
         parent::setUp();
         $this->bootstrap = new bootstrap();
-        $this->bootstrap->setUpLogger();
-        $this->bootstrap->forceConfigurationSet('Base');
+        $this->bootstrap
+            ->setUpLogger()
+            ->setupSQLiteDatabase()
+            ->forceConfigurationSet('Base');
 
         $this->wrapper = new BaseMock($this->bootstrap->getLogger(), '123456');
     }
@@ -38,6 +41,6 @@ class BaseTest extends TestCase
         $this->assertSame(12345678, $this->wrapper->getUserId());
         $this->assertSame(12341234, $this->wrapper->getChatId());
         $this->assertSame('start', $this->wrapper->getAction());
-        $this->assertInstanceOf('unreal4u\\TelegramAPI\\Telegram\\Types\\Update', $this->wrapper->getUpdateObject());
+        $this->assertInstanceOf(Update::class, $this->wrapper->getUpdateObject());
     }
 }

@@ -39,7 +39,6 @@ class UptimeMonitorBot extends Base {
         $this->extractBasicInformation($postData);
         // Database connections are mandatory for all operations on this bot
         $this->setupDatabaseSettings('UptimeMonitorBot');
-
         $this->initializeMonitor();
 
         switch ($this->botCommand) {
@@ -307,6 +306,8 @@ class UptimeMonitorBot extends Base {
     }
 
     /**
+     * Returns the complete URL notify URL for uptimerobot.com (including HTTP_HOST)
+     *
      * @return string
      */
     private function constructNotifyUrl(): string

@@ -3,5 +3,7 @@
 define('BOT_TOKENS', [
     '123123123:asdasdasdas-asdasdasdasdasdadasd_gg' => 'MyOneBot',
     '123123123:asdasdasdas-asdasdasdasdasdadasd_hh' => 'MyOtherBot',
+    '123123123:asdasdasdas-asdasdasdasdasdadasd_ii' => 'AndAnotherBot',
 ]);
 
+define('ENVIRONMENT', 'production');

@@ -1,0 +1,7 @@
+default_connection: default
+default:
+    driver: pdo_sqlite
+    #path: "/vagrant/maindb.db3"
+    #dbname: "/vagrant/maindb.db3"
+    memory: true
+    charset: "UTF8"

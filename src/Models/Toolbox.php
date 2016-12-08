@@ -9,18 +9,28 @@ use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration as DoctrineConfiguration;
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use unreal4u\TelegramBots\Exceptions\Database\DriverAlreadyDefined;
 use unreal4u\TelegramBots\Exceptions\Database\DriverNotFound;
 
 class Toolbox
 {
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
     private $developmentMode = false;
 
     private $toolbox = [];
 
-    public function __construct(bool $developmentMode = false)
+    public function __construct(bool $developmentMode = false, LoggerInterface $logger)
     {
         $this->developmentMode = $developmentMode;
+
+        if ($logger !== null) {
+            $this->logger = $logger;
+        }
     }
 
     /**

@@ -1,0 +1,4 @@
+default_connection: default
+default:
+    dbuser: telegrambot
+    dbpass: telegrambot

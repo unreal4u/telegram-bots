@@ -7,9 +7,12 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use unreal4u\TelegramBots\DatabaseWrapper;
 
+include('conf.php');
+
 $logger = new Logger('TGBot');
 $streamHandler = new StreamHandler('telegramApiLogs/cli-config.log');
 $logger->pushHandler($streamHandler);
 
 $wrapper = new DatabaseWrapper($logger);
-return ConsoleRunner::createHelperSet($wrapper->getEntity('UptimeMonitorBot'));
+$db = $wrapper->getEntity('UptimeMonitorBot');
+return ConsoleRunner::createHelperSet($db);

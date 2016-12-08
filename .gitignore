@@ -2,3 +2,4 @@
 /conf.php
 /.vagrant/
 /.idea/
+/config/config.production.yml
