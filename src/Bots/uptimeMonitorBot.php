@@ -78,6 +78,8 @@ class UptimeMonitorBot extends Base {
      */
     public function handleUptimeMonitorNotification(array $rawData, string $incomingUuid): EventManager
     {
+        // HACK: Sometimes I get a 400 bad request back from Telegram when sending the same monitor to multiple chats
+        sleep(mt_rand(50, 250));
         $this->setupDatabaseSettings('UptimeMonitorBot');
         $this->checkValidity($incomingUuid);
         $this->logger->info('Found valid incoming UUID, processing the request', ['uuid' => $incomingUuid]);
