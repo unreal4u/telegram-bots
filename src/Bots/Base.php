@@ -104,6 +104,8 @@ abstract class Base implements Bots
         $this->HTTPClient = $client;
 
         $this->db = $db;
+
+        $this->logger->debug('Finished constructing bot');
     }
 
     /**

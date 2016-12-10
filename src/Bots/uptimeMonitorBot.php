@@ -8,6 +8,7 @@ use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
+use unreal4u\TelegramAPI\Telegram\Methods\GetUpdates;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Methods\SendPhoto;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
@@ -63,6 +64,12 @@ class UptimeMonitorBot extends Base {
                 break;
             case '':
             default:
+                if (!empty($this->message->new_chat_member)) {
+                    $getUpdates = new GetUpdates();
+                    $getUpdates->offset = $this->updateObject->update_id + 1;
+                    return $getUpdates;
+                }
+
                 return new GetMe();
                 break;
         }
@@ -78,8 +85,6 @@ class UptimeMonitorBot extends Base {
      */
     public function handleUptimeMonitorNotification(array $rawData, string $incomingUuid): EventManager
     {
-        // HACK: Sometimes I get a 400 bad request back from Telegram when sending the same monitor to multiple chats
-        usleep(mt_rand(50, 250));
         $this->setupDatabaseSettings('UptimeMonitorBot');
         $this->checkValidity($incomingUuid);
         $this->logger->info('Found valid incoming UUID, processing the request', ['uuid' => $incomingUuid]);
