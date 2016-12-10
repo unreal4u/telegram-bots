@@ -36,9 +36,7 @@ class RequestHandler {
 
     private function setupBotLogger(string $currentBot): RequestHandler
     {
-        $this->botLogger = new Logger($currentBot);
-        $streamHandler = new StreamHandler('telegramApiLogs/'.$currentBot.'.log');
-        $this->botLogger->pushHandler($streamHandler);
+        $this->botLogger = $this->logger->withName($currentBot);
         $this->botLogger->debug(str_repeat('-', 20).' New request '.str_repeat('-', 20));
 
         return $this;
@@ -64,8 +62,10 @@ class RequestHandler {
             $this->botLogger->debug('Incoming data', [$_POST]);
             $bot->createAnswer($_POST);
             $this->botLogger->debug('Created an answer');
-            $bot->sendResponse();
-            $this->botLogger->debug('Sent a response to Telegram servers, work is done');
+            $receivedMessage = $bot->sendResponse();
+            $this->botLogger->debug('Sent a response to Telegram servers, work is done', [
+                'receivedMessage' => print_r($receivedMessage, true)
+            ]);
         } catch (\Exception $e) {
             // Log in the specific bot logger instead of general log
             $this->botLogger->error(sprintf('Captured exception: "%s" for bot %s', $e->getMessage(), $currentBot));

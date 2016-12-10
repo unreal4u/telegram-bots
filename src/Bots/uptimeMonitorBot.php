@@ -64,12 +64,6 @@ class UptimeMonitorBot extends Base {
                 break;
             case '':
             default:
-                if (!empty($this->message->new_chat_member)) {
-                    $getUpdates = new GetUpdates();
-                    $getUpdates->offset = $this->updateObject->update_id + 1;
-                    return $getUpdates;
-                }
-
                 return new GetMe();
                 break;
         }

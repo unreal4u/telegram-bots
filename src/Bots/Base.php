@@ -265,6 +265,7 @@ abstract class Base implements Bots
      */
     final public function sendResponse(): TelegramTypes
     {
+        $this->logger->debug('Sending response back', ['instanceType' => get_class($this->response)]);
         if (!($this->response instanceof GetMe)) {
             $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
             return $tgLog->performApiRequest($this->response);

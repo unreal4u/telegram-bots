@@ -4,12 +4,12 @@ declare(strict_types = 1);
 
 include('../src/common.php');
 
+use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use unreal4u\TelegramBots\RequestHandler;
 
 $logger = new Logger('TGBot');
-$streamHandler = new StreamHandler('telegramApiLogs/main.log', Logger::INFO);
+$streamHandler = new RotatingFileHandler('telegramApiLogs/main.log', 365, Logger::DEBUG);
 $logger->pushHandler($streamHandler);
 
 $trimmedRequestUri = trim($_SERVER['DOCUMENT_URI'], '/');
