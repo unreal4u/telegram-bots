@@ -7,6 +7,7 @@ namespace unreal4u\TelegramBots\Bots;
 use Doctrine\ORM\EntityManager;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
+use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
@@ -27,12 +28,12 @@ abstract class Base implements Bots
     /**
      * @var LoggerInterface
      */
-    protected $logger = null;
+    protected $logger;
 
     /**
      * @var Client
      */
-    protected $HTTPClient = null;
+    protected $HTTPClient;
 
     /**
      * @var string
@@ -66,27 +67,27 @@ abstract class Base implements Bots
     /**
      * @var Update
      */
-    protected $updateObject = null;
+    protected $updateObject;
 
     /**
      * @var EntityManager
      */
-    protected $db = null;
+    protected $db;
 
     /**
-     * @var SendMessage
+     * @var TelegramMethods
      */
-    protected $response = null;
+    protected $response;
 
     /**
      * @var Message
      */
-    protected $message = null;
+    protected $message;
 
     /**
      * @var MessageEntity
      */
-    protected $entities = null;
+    protected $entities;
 
     final public function __construct(
         LoggerInterface $logger,
@@ -266,7 +267,7 @@ abstract class Base implements Bots
     final public function sendResponse(): TelegramTypes
     {
         $this->logger->debug('Sending response back', ['instanceType' => get_class($this->response)]);
-        if (!($this->response instanceof GetMe)) {
+        if ($this->response !== null && !($this->response instanceof GetMe)) {
             $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
             return $tgLog->performApiRequest($this->response);
         }
