@@ -315,7 +315,7 @@ class UptimeMonitorBot extends Base {
         return $this->response;
     }
 
-    protected function regenerateNotifyUrl(): SendMessage
+    protected function regenerateNotifyUrl(): TelegramMethods
     {
         $this->logger->debug('[CMD] Inside REGENERATE_NOTIFY_URL');
 
