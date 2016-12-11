@@ -204,8 +204,9 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->debug('[CMD] Inside START');
         $this->response->text = sprintf(
-            _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down!%s'),
-            PHP_EOL
+            _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down!%s%s'),
+            PHP_EOL,
+            'This bot integrates the https://uptimerobot.com services with Telegram, and is unofficial.'
         );
 
         if (empty($this->monitor)) {
@@ -231,7 +232,7 @@ class UptimeMonitorBot extends Base {
             '`get_notify_url`: Will return the callback url to be filled in in %s',
             'https://uptimerobot.com'
         )).PHP_EOL;
-        $messageText .= _('`regenerate_notify_url`: Will regenerate the Notification URL, invalidates previous URL');
+        $messageText .= _('`regenerate_notify_url`: Will regenerate the Notification URL, **but will invalidate the previous URL! Use with caution!**');
 
         $this->response->text .= $messageText;
         return $this->response;
