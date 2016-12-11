@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace unreal4u\TelegramBots\Bots\UptimeMonitor\Setup;
 
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\Common;
 
 class Step3 extends Common {
     public function generateAnswer(): TelegramMethods

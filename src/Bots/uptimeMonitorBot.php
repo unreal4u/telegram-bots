@@ -8,10 +8,12 @@ use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
-use unreal4u\TelegramAPI\Telegram\Methods\GetUpdates;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Methods\SendPhoto;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\RegenerateNotifyUrl\Cancel;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\RegenerateNotifyUrl\Confirmation;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\RegenerateNotifyUrl\Regenerate;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step1;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step2;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step3;
@@ -55,13 +57,15 @@ class UptimeMonitorBot extends Base {
                 return $this->getNotifyUrl();
                 break;
             case 'regenerate_notify_url':
-                $this->createSimpleMessageStub();
-                return $this->regenerateNotifyUrl();
+                $this->regenerateNotifyUrl();
                 break;
             case 'help':
                 $this->createSimpleMessageStub();
                 return $this->help();
                 break;
+            // Not yet implemented, will be in the nearby future
+            case 'lock':
+            case 'unlock':
             case '':
             default:
                 return new GetMe();
@@ -100,12 +104,12 @@ class UptimeMonitorBot extends Base {
     private function initializeMonitor(): uptimeMonitorBot
     {
         $this->monitor = $this->db
-            ->getRepository('UptimeMonitorBot:Monitors')
-            ->findOneBy(['userId' => $this->userId, 'chatId' => $this->chatId])
+            ->getRepository(Monitors::class)
+            ->findOneBy(['chatId' => $this->chatId])
         ;
 
         if (empty($this->monitor)) {
-            $this->regenerateNotifyUrl();
+            $this->regenerateNotifyUrlDatabaseEntry();
         }
 
         return $this;
@@ -120,8 +124,9 @@ class UptimeMonitorBot extends Base {
     private function createNotificationMessage(Events $event): TelegramMethods
     {
         $this->monitor = $this->db
-            ->getRepository('UptimeMonitorBot:Monitors')
-            ->find($event->getMonitorId());
+            ->getRepository(Monitors::class)
+            ->find($event->getMonitorId())
+        ;
 
         $this->response = new GetMe();
         if (!empty($this->monitor)) {
@@ -175,7 +180,7 @@ class UptimeMonitorBot extends Base {
         $this->logger->info('Generating UP message');
         /** @var Events $previousEvent */
         $previousEvent = $this->db
-            ->getRepository('UptimeMonitorBot:Events')
+            ->getRepository(Events::class)
             ->findOneBy([
                 'monitorId' => $this->monitor->getId(),
                 'urMonitorId' => $event->getUrMonitorId(),
@@ -300,13 +305,58 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->debug('[CMD] Inside GETNOTIFYURL');
         if (empty($this->monitor)) {
-            $this->regenerateNotifyUrl();
+            $this->regenerateNotifyUrlDatabaseEntry();
         }
 
         $this->response->text .= sprintf(
             'Fill in the following url in the box: `%s`',
             $this->constructNotifyUrl()
         );
+        return $this->response;
+    }
+
+    protected function regenerateNotifyUrl(): SendMessage
+    {
+        $this->logger->debug('[CMD] Inside REGENERATE_NOTIFY_URL');
+
+        if (isset($this->subArguments['newMsg']) || !isset($this->subArguments['step'])) {
+            $this->createSimpleMessageStub();
+        } else {
+            $this->createEditableMessage();
+        }
+
+        // Hack: define a default action
+        if (!isset($this->subArguments['step'])) {
+            $this->subArguments['step'] = '1';
+        }
+        // Do not include a reply_to_message_id in this series, it's only annoying
+        $this->response->reply_to_message_id = null;
+
+        switch ($this->subArguments['step']) {
+            case '1':
+                $step = new Confirmation($this->logger, $this->response);
+                $step->generateAnswer();
+                break;
+            case 'regenerate':
+                // Regenerate the notify url for the current chatId
+                $this->regenerateNotifyUrlDatabaseEntry();
+                $step = new Regenerate($this->logger, $this->response);
+                $step->setNotifyUrl($this->constructNotifyUrl());
+                $step->generateAnswer();
+                break;
+            case 'cancel':
+                $step = new Cancel($this->logger, $this->response);
+                $step->generateAnswer();
+                break;
+            default:
+                $this->logger->error('Invalid step detected!', [
+                    'botCommand' => $this->botCommand,
+                    'subArguments' => $this->subArguments
+                ]);
+                throw new InvalidSetupRequest('An invalid step has been detected, please check!');
+                break;
+        }
+
         return $this->response;
     }
 
@@ -325,11 +375,16 @@ class UptimeMonitorBot extends Base {
      *
      * @return Monitors
      */
-    private function regenerateNotifyUrl(): Monitors
+    private function regenerateNotifyUrlDatabaseEntry(): Monitors
     {
-        $this->monitor = new Monitors();
+        // Create new entry if none exists yet
+        if (empty($this->monitor)) {
+            $this->monitor = new Monitors();
+        }
+
         $this->monitor->setNotifyUrl(Uuid::uuid4()->toString());
         $this->monitor->setChatId($this->chatId);
+        // Transfer ownership as well
         $this->monitor->setUserId($this->userId);
         $this->db->persist($this->monitor);
         $this->db->flush();
@@ -346,7 +401,7 @@ class UptimeMonitorBot extends Base {
     private function checkValidity(string $uuid): UptimeMonitorBot
     {
         $this->monitor = $this->db
-            ->getRepository('UptimeMonitorBot:Monitors')
+            ->getRepository(Monitors::class)
             ->findOneBy(['notifyUrl' => $uuid]);
 
         if (empty($this->monitor)) {

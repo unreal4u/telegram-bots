@@ -7,6 +7,7 @@ namespace unreal4u\TelegramBots\Bots\UptimeMonitor\Setup;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\Common;
 
 class Step1 extends Common {
     public function generateAnswer(): TelegramMethods

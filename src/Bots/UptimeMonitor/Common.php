@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace unreal4u\TelegramBots\Bots\UptimeMonitor\Setup;
+namespace unreal4u\TelegramBots\Bots\UptimeMonitor;
 
 use Psr\Log\LoggerInterface;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
