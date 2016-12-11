@@ -57,7 +57,7 @@ class UptimeMonitorBot extends Base {
                 return $this->getNotifyUrl();
                 break;
             case 'regenerate_notify_url':
-                $this->regenerateNotifyUrl();
+                return $this->regenerateNotifyUrl();
                 break;
             case 'help':
                 $this->createSimpleMessageStub();
