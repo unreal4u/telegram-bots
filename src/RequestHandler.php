@@ -62,10 +62,8 @@ class RequestHandler {
             $this->botLogger->debug('Incoming data', [$_POST]);
             $bot->createAnswer($_POST);
             $this->botLogger->debug('Created an answer');
-            $receivedMessage = $bot->sendResponse();
-            $this->botLogger->debug('Sent a response to Telegram servers, work is done', [
-                'receivedMessage' => print_r($receivedMessage, true)
-            ]);
+            // Assume this went well
+            $bot->sendResponse();
         } catch (\Exception $e) {
             // Log in the specific bot logger instead of general log
             $this->botLogger->error(sprintf('Captured exception: "%s" for bot %s', $e->getMessage(), $currentBot));
@@ -80,9 +78,9 @@ class RequestHandler {
      */
     private function uptimeMonitorNotification(string $requestUri): bool
     {
-        $this->logger->info('Received a probable notification from monitor API');
         $redirect = true;
         $requestUriParts = explode('/', $requestUri);
+        $this->logger->info('Received a probable notification from monitor API', $requestUriParts);
 
         if (!empty($requestUriParts[0])) {
             $this->logger->info('Incoming request for bot', [
@@ -98,7 +96,7 @@ class RequestHandler {
                     $bot = new UptimeMonitorBot($this->botLogger, $flippedKeys['UptimeMonitorBot']);
                     $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[1]);
                     /** @var Message $message */
-                    $message = $bot->sendResponse();
+                    $bot->sendResponse();
                     $redirect = false;
                     if ($message->message_id !== false) {
                         // To be able to respond with a reply, quoting the original text

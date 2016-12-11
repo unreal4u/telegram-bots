@@ -176,13 +176,16 @@ class UptimeMonitorBot extends Base {
         /** @var Events $previousEvent */
         $previousEvent = $this->db
             ->getRepository('UptimeMonitorBot:Events')
-            ->findOneBy(['urMonitorId' => $event->getUrMonitorId(), 'alertType' => 1]);
+            ->findOneBy([
+                'monitorId' => $this->monitor->getId(),
+                'urMonitorId' => $event->getUrMonitorId(),
+                'alertType' => 1,
+            ]);
 
         if (!empty($previousEvent)) {
             $this->logger->debug('Found a previous messageId to reply to, setting it', [
                 $previousEvent->getTelegramMessageId()
             ]);
-
             $this->response->reply_to_message_id = $previousEvent->getTelegramMessageId();
         }
 

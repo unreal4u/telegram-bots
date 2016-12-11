@@ -271,6 +271,7 @@ abstract class Base implements Bots
             $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
             return $tgLog->performApiRequest($this->response);
         }
+        $this->logger->debug('Nothing to send back, finishing up');
 
         return new ResultNull();
     }
