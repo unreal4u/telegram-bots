@@ -31,6 +31,13 @@ class bootstrap {
      */
     protected $entityManager;
 
+    public function __destruct()
+    {
+        $this->logger = null;
+        $this->entityManager = null;
+        $this->botName = '';
+    }
+
     /**
      * Sets up the /dev/null logger for all tests
      *
@@ -130,7 +137,7 @@ class bootstrap {
         return $this;
     }
 
-    public function getEntityManager(): EntityManager
+    public function getEM(): EntityManager
     {
         return $this->entityManager;
     }

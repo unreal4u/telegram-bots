@@ -18,6 +18,7 @@ use unreal4u\TelegramAPI\Telegram\Types\Inline\Query;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
 use unreal4u\TelegramAPI\Telegram\Types\MessageEntity;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
+use unreal4u\TelegramAPI\Telegram\Types\User;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 use unreal4u\TelegramBots\DatabaseWrapper;
@@ -33,7 +34,7 @@ abstract class Base implements Bots
     /**
      * @var Client
      */
-    protected $HTTPClient;
+    protected $httpClient;
 
     /**
      * @var string
@@ -95,17 +96,15 @@ abstract class Base implements Bots
         Client $client = null,
         EntityManager $db = null
     ) {
-        $this->logger = $logger;
         $this->token = $token;
         // If no client provided, create a new instance of a client
-        if (is_null($client)) {
+        if ($client === null) {
             $client = new Client();
         }
 
-        $this->HTTPClient = $client;
-
+        $this->httpClient = $client;
         $this->db = $db;
-
+        $this->logger = $logger;
         $this->logger->debug('Finished constructing bot');
     }
 
@@ -225,6 +224,15 @@ abstract class Base implements Bots
                 break;
             } elseif ($telegramType instanceof Message) {
                 $this->handleMessageObject($telegramType);
+
+                // Handle special cases: adding or removing a chat member
+                if ($telegramType->new_chat_member instanceof User) {
+                    $this->handleChatMemberUpdate($telegramType->new_chat_member, 'start');
+                }
+
+                if ($telegramType->left_chat_member instanceof User) {
+                    $this->handleChatMemberUpdate($telegramType->left_chat_member, '/end');
+                }
                 // Once we have the basic values we need to continue, break out of the loop ASAP
                 break;
             } else {
@@ -243,12 +251,43 @@ abstract class Base implements Bots
     }
 
     /**
+     * Gets the current bot information directly from the Telegram servers
+     *
+     * @return User
+     */
+    final private function getMe(): User
+    {
+        $this->logger->info('Requesting a live GetMe() method');
+        $tgLog = new TgLog($this->token, $this->logger, $this->httpClient);
+        return $tgLog->performApiRequest(new GetMe());
+    }
+
+    /**
+     * Handles off operations concerning adding or leaving chat members
+     *
+     * @param User $user
+     * @param string $operation
+     * @return Base
+     */
+    final private function handleChatMemberUpdate(User $user, string $operation): Base
+    {
+        $this->logger->debug('Checking whether added or eliminated member is the bot itself');
+        if ($this->getMe()->id === $user->id) {
+            $this->botCommand = $operation;
+            $this->logger->info('Bot is the member being added/removed to a group chat', ['operation' => $operation]);
+        }
+
+        return $this;
+    }
+
+    /**
      * Will create a SendMessage stub in response
      *
      * @return Base
      */
     final protected function createSimpleMessageStub(): Base
     {
+        $this->logger->debug('Creating simple message stub with some default values');
         $this->response = new SendMessage();
         $this->response->chat_id = $this->chatId;
         $this->response->reply_to_message_id = $this->message->message_id;
@@ -268,7 +307,7 @@ abstract class Base implements Bots
     {
         $this->logger->debug('Sending response back', ['instanceType' => get_class($this->response)]);
         if ($this->response !== null && !($this->response instanceof GetMe)) {
-            $tgLog = new TgLog($this->token, $this->logger, $this->HTTPClient);
+            $tgLog = new TgLog($this->token, $this->logger, $this->httpClient);
             return $tgLog->performApiRequest($this->response);
         }
         $this->logger->debug('Nothing to send back, finishing up');
@@ -285,6 +324,7 @@ abstract class Base implements Bots
     final protected function setupDatabaseSettings(string $entityNamespace): Base
     {
         if (is_null($this->db)) {
+            $this->logger->debug('Initializing database connection', ['entityNamespace' => $entityNamespace]);
             $wrapper = new DatabaseWrapper($this->logger);
             $this->db = $wrapper->getEntity($entityNamespace);
         }
@@ -307,6 +347,7 @@ abstract class Base implements Bots
                 if (strpos($this->botCommand, '@') !== false) {
                     $this->botCommand = substr($this->botCommand, 0, strpos($this->botCommand, '@'));
                 }
+                $this->logger->debug('Found a bot_command within the entities', ['command' => $this->botCommand]);
 
                 $this->subArguments[] = substr($this->message->text, $entity->offset + $entity->length + 1);
             }

@@ -66,7 +66,7 @@ class TheTimeBot extends Base
                 break;
             case 'getTimeByLocation':
                 $this->logger->debug(sprintf('Asking Geonames what timezone is lat: %s and lng: %s', $this->arguments->latitude, $this->arguments->longitude));
-                $answer = $this->HTTPClient->get(sprintf(
+                $answer = $this->httpClient->get(sprintf(
                     'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
                     $this->arguments->latitude,
                     $this->arguments->longitude,

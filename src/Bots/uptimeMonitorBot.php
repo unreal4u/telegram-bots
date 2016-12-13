@@ -49,6 +49,9 @@ class UptimeMonitorBot extends Base {
                 $this->createSimpleMessageStub();
                 return $this->start();
                 break;
+            case '/end':
+                $this->dropMonitor();
+                return new GetMe();
             case 'setup':
                 return $this->setup();
                 break;
@@ -334,17 +337,20 @@ class UptimeMonitorBot extends Base {
 
         switch ($this->subArguments['step']) {
             case '1':
+                $this->logger->debug('Inside step "1"', ['chatId' => $this->monitor->getChatId()]);
                 $step = new Confirmation($this->logger, $this->response);
                 $step->generateAnswer();
                 break;
             case 'regenerate':
                 // Regenerate the notify url for the current chatId
+                $this->logger->debug('Inside step "regenerate"', ['chatId' => $this->monitor->getChatId()]);
                 $this->regenerateNotifyUrlDatabaseEntry();
                 $step = new Regenerate($this->logger, $this->response);
                 $step->setNotifyUrl($this->constructNotifyUrl());
                 $step->generateAnswer();
                 break;
             case 'cancel':
+                $this->logger->debug('Inside step "cancel"', ['chatId' => $this->monitor->getChatId()]);
                 $step = new Cancel($this->logger, $this->response);
                 $step->generateAnswer();
                 break;
@@ -379,6 +385,7 @@ class UptimeMonitorBot extends Base {
     {
         // Create new entry if none exists yet
         if (empty($this->monitor)) {
+            $this->logger->debug('Creating new monitor from scratch');
             $this->monitor = new Monitors();
         }
 
@@ -388,7 +395,27 @@ class UptimeMonitorBot extends Base {
         $this->monitor->setUserId($this->userId);
         $this->db->persist($this->monitor);
         $this->db->flush();
+        $this->logger->info('Set monitor object, now saving to db', [
+            'monitorId' => $this->monitor->getId(),
+            'chatId' => $this->monitor->getChatId(),
+        ]);
         return $this->monitor;
+    }
+
+    /**
+     * Will remove all monitors related to the current chatId
+     * @return UptimeMonitorBot
+     */
+    private function dropMonitor(): UptimeMonitorBot
+    {
+        $this->logger->info('Removing entry from database', [
+            'monitorId' => $this->monitor->getId(),
+            'chatId' => $this->monitor->getChatId(),
+        ]);
+        $this->db->remove($this->monitor);
+        $this->db->flush();
+
+        return $this;
     }
 
     /**
@@ -407,6 +434,10 @@ class UptimeMonitorBot extends Base {
         if (empty($this->monitor)) {
             throw new InvalidRequest('Invalid incoming UUID detected: '.$uuid);
         }
+        $this->logger->info('Valid monitor found', [
+            'monitorId' => $this->monitor->getId(),
+            'chatId' => $this->monitor->getChatId(),
+        ]);
 
         return $this;
     }
@@ -418,6 +449,7 @@ class UptimeMonitorBot extends Base {
      */
     private function createEditableMessage(): UptimeMonitorBot
     {
+        $this->logger->debug('Creating new editable message object');
         $this->response = new EditMessageText();
         $this->response->message_id = $this->message->message_id;
         $this->response->chat_id = $this->chatId;
