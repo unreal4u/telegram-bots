@@ -12,7 +12,7 @@ use unreal4u\TelegramBots\RequestHandler;
 
 $logger = new Logger('TGBot');
 $streamHandler = new RotatingFileHandler('telegramApiLogs/main.log', 365, Logger::DEBUG);
-$monologTgLogger = new MonologHandler(new TgLog(MONOLOG_BOT), MONOLOG_CHATID, Logger::WARNING);
+$monologTgLogger = new MonologHandler(new TgLog(MONOLOG_BOT), MONOLOG_CHATID, Logger::ERROR);
 $logger->pushHandler($streamHandler);
 $logger->pushHandler($monologTgLogger);
 
