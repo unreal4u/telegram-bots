@@ -1525,12 +1525,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/unreal4u/monolog-telegram.git",
-                "reference": "61e4a8adb00aadc788de6294121e845338b3e675"
+                "reference": "13c34ac16e9dad06e632ca8ed8aeee2d44663e5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unreal4u/monolog-telegram/zipball/61e4a8adb00aadc788de6294121e845338b3e675",
-                "reference": "61e4a8adb00aadc788de6294121e845338b3e675",
+                "url": "https://api.github.com/repos/unreal4u/monolog-telegram/zipball/13c34ac16e9dad06e632ca8ed8aeee2d44663e5c",
+                "reference": "13c34ac16e9dad06e632ca8ed8aeee2d44663e5c",
                 "shasum": ""
             },
             "require": {
@@ -1568,7 +1568,7 @@
                 "telegram",
                 "telegram bot"
             ],
-            "time": "2016-12-14 00:08:29"
+            "time": "2016-12-14 00:25:05"
         },
         {
             "name": "unreal4u/telegram-api",
