@@ -91,12 +91,44 @@ class UptimeMonitorBot extends Base {
         $this->logger->info('Found valid incoming UUID, processing the request', ['uuid' => $incomingUuid]);
 
         $eventManager = new EventManager($this->db);
-        $eventManager->fillEvent($rawData, $this->monitor);
-        $event = $eventManager->saveEvent();
-        $this->logger->debug('Saved event, creating notification message');
-        $this->createNotificationMessage($event);
+        if ($this->isValidGetData($rawData)) {
+            $eventManager->fillEvent($rawData, $this->monitor);
+            $event = $eventManager->saveEvent();
+            $this->logger->debug('Saved event, creating notification message');
+            $this->createNotificationMessage($event);
+        } else {
+            $this->logger->warning('Invalid GET data found', [
+                'monitorId' => $this->monitor->getId(),
+                'chatId' => $this->chatId,
+            ]);
+            $this->response = new GetMe();
+        }
 
         return $eventManager;
+    }
+
+    /**
+     * Checks whether the request from uptimerobot.com is valid or not
+     *
+     * TODO In the future, each monitor engine will have it's own class
+     *
+     * @param array $rawData
+     * @return bool
+     */
+    private function isValidGetData(array $rawData): bool
+    {
+        if (!isset(
+            $rawData['alertType'],
+            $rawData['alertDetails'],
+            $rawData['monitorFriendlyName'],
+            $rawData['monitorID'],
+            $rawData['monitorURL'],
+            $rawData['alertDateTime']
+        )) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

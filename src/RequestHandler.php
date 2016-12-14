@@ -96,11 +96,13 @@ class RequestHandler {
                     $bot = new UptimeMonitorBot($this->botLogger, $flippedKeys['UptimeMonitorBot']);
                     $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[1]);
                     /** @var Message $message */
-                    $bot->sendResponse();
-                    $redirect = false;
-                    if ($message->message_id !== false) {
-                        // To be able to respond with a reply, quoting the original text
-                        $eventManager->setEventNotified($message->message_id);
+                    $message = $bot->sendResponse();
+                    if ($message instanceof Message) {
+                        $redirect = false;
+                        if ($message->message_id !== false) {
+                            // To be able to respond with a reply, quoting the original text
+                            $eventManager->setEventNotified($message->message_id);
+                        }
                     }
                 } catch (\Exception $e) {
                     $this->logger->error($e->getMessage().' (File: '.$e->getFile().':'.$e->getLine().')');
