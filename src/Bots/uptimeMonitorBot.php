@@ -244,9 +244,10 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->debug('[CMD] Inside START');
         $this->response->text = sprintf(
-            _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down!%s%s'),
+            _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down (or up)%s%s%s%s'),
             PHP_EOL,
-            'This bot integrates the https://uptimerobot.com services with Telegram, and is unofficial.'
+            'This bot integrates the https://uptimerobot.com services with Telegram, and is unofficial.',
+            PHP_EOL
         );
 
         if (empty($this->monitor)) {
@@ -255,6 +256,7 @@ class UptimeMonitorBot extends Base {
             // Complete with the text from the help page
             $this->help();
         }
+
         return $this->response;
     }
 
@@ -265,14 +267,20 @@ class UptimeMonitorBot extends Base {
     protected function help(): SendMessage
     {
         $this->logger->debug('[CMD] Inside HELP');
-        $messageText  = _(sprintf('Your notifyUrl is: %s', $this->constructNotifyUrl())).PHP_EOL;
+        $messageText  = _(sprintf(
+            'Your notifyUrl is: `%s', $this->constructNotifyUrl()
+        )).PHP_EOL;
         $messageText .= _('The available commands are: ').PHP_EOL;
-        $messageText .= _('`setup`: Guides you through the setup of a new monitor').PHP_EOL;
+        $messageText .= _(
+            '`/setup`: Step-to-step guide to help you setup a monitor at https://uptimerobot.com/'
+        ).PHP_EOL;
         $messageText .= _(sprintf(
-            '`get_notify_url`: Will return the callback url to be filled in in %s',
+            '`/get_notify_url`: Will return the callback url to be filled in %s',
             'https://uptimerobot.com'
         )).PHP_EOL;
-        $messageText .= _('`regenerate_notify_url`: Will regenerate the Notification URL, **but will invalidate the previous URL! Use with caution!**');
+        $messageText .= _(sprintf('%s%s',
+            '`/regenerate_notify_url`: Will regenerate the Notification URL, *but will invalidate the previous URL!* ',
+            'Use with caution!'));
 
         $this->response->text .= $messageText;
         return $this->response;
@@ -344,8 +352,9 @@ class UptimeMonitorBot extends Base {
         }
 
         $this->response->text .= sprintf(
-            'Fill in the following url in the box: `%s`',
-            $this->constructNotifyUrl()
+            'Your notification URL is: `%s` (include the question mark).%s',
+            $this->constructNotifyUrl(),
+            PHP_EOL.PHP_EOL.'*Tip*: Use the `/setup` command for a step-to-step introduction'
         );
         return $this->response;
     }
