@@ -46,9 +46,9 @@ class DatabaseWrapper
             'default_table_options' => $finalConfiguration['default']['default_table_options'],
         ], $finalConfiguration['default']['extra_types']);
 
-        $this->logger->info('Created configuration for environment', [
+        $this->logger->debug('Created configuration for environment', [
             'ENV' => ENVIRONMENT,
-            'finalConf' => $finalConfiguration
+            'driver' => $finalConfiguration['default']['driver'],
         ]);
 
         return $toolbox->getToolbox('storage', $entityNamespace);
