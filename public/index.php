@@ -14,6 +14,7 @@ $logger = new Logger('TGBot');
 $streamHandler = new RotatingFileHandler('telegramApiLogs/main.log', 365, Logger::DEBUG);
 $monologTgLogger = new MonologHandler(new TgLog(MONOLOG_BOT), MONOLOG_CHATID, Logger::WARNING);
 $logger->pushHandler($streamHandler);
+$logger->pushHandler($monologTgLogger);
 
 $trimmedRequestUri = trim($_SERVER['DOCUMENT_URI'], '/');
 
