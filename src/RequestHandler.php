@@ -112,7 +112,7 @@ class RequestHandler {
         }
 
         if ($redirect === true) {
-            $this->logger->warning('Request not coming from monitor API or Telegram servers, please check logs');
+            $this->logger->info('Request not coming from monitor API or Telegram servers, please check logs');
             header('Location: https://github.com/unreal4u?tab=repositories', true, 302);
         }
 
