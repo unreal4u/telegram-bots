@@ -272,7 +272,7 @@ class UptimeMonitorBot extends Base {
         )).PHP_EOL;
         $messageText .= _('The available commands are: ').PHP_EOL;
         $messageText .= _(
-            '`/setup`: Step-to-step guide to help you setup a monitor at https://uptimerobot.com/'
+            '`/setup`: Step-by-step guide to help you setup a monitor at https://uptimerobot.com/'
         ).PHP_EOL;
         $messageText .= _(sprintf(
             '`/get_notify_url`: Will return the callback url to be filled in %s',
@@ -280,7 +280,12 @@ class UptimeMonitorBot extends Base {
         )).PHP_EOL;
         $messageText .= _(sprintf('%s%s',
             '`/regenerate_notify_url`: Will regenerate the Notification URL, *but will invalidate the previous URL!* ',
-            'Use with caution!'));
+            'Use with caution!'
+        )).PHP_EOL;
+        $messageText .= _(sprintf(
+            'For more help, please visit the [wiki page of this bot](%s).',
+            'https://github.com/unreal4u/telegram-bots/wiki/Usage:-UptimeMonitorBot'
+        )).PHP_EOL;
 
         $this->response->text .= $messageText;
         return $this->response;
@@ -354,7 +359,7 @@ class UptimeMonitorBot extends Base {
         $this->response->text .= sprintf(
             'Your notification URL is: `%s` (include the question mark).%s',
             $this->constructNotifyUrl(),
-            PHP_EOL.PHP_EOL.'*Tip*: Use the `/setup` command for a step-to-step introduction'
+            PHP_EOL.PHP_EOL.'*Tip*: Use the `/setup` command for a step-by-step introduction'
         );
         return $this->response;
     }
