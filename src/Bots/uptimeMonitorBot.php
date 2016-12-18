@@ -268,7 +268,7 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->debug('[CMD] Inside HELP');
         $messageText  = _(sprintf(
-            'Your notifyUrl is: `%s', $this->constructNotifyUrl()
+            'Your notifyUrl is: `%s`', $this->constructNotifyUrl()
         )).PHP_EOL;
         $messageText .= _('The available commands are: ').PHP_EOL;
         $messageText .= _(
