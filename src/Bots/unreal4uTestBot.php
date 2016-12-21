@@ -32,6 +32,9 @@ class unreal4uTestBot extends Base {
                 return $this->help();
                 break;
             case '':
+                $this->logger->debug('Sent data was the following', [$this->message]);
+                return $this->checkForCities();
+                break;
             default:
                 return new GetMe();
                 break;
@@ -79,6 +82,13 @@ class unreal4uTestBot extends Base {
         $messageText .= '- You can also send a location (Works from phone only)';
 
         $this->response->text .= $messageText;
+        return $this->response;
+    }
+
+    private function checkForCities(): SendMessage
+    {
+        $this->response->text = 'The input was: '.$this->message->text;
+
         return $this->response;
     }
 
