@@ -16,6 +16,8 @@ class TheTimeBot extends Base
 
     protected $arguments = '';
 
+    protected $update;
+
     public function createAnswer(array $postData=[]): TelegramMethods
     {
         $update = new Update($postData, $this->logger);
@@ -38,9 +40,10 @@ class TheTimeBot extends Base
             )));
             $this->arguments = trim(substr($update->message->text, $update->message->entities[0]->length));
             $this->logger->info(sprintf(
-                'The requested command is "%s". Arguments are "%s"',
+                'The requested command is "%s". Arguments are "%s". Sent text is: "%s"',
                 $this->command,
-                $this->arguments
+                $this->arguments,
+                $update->message->text
             ));
         }
 
@@ -48,6 +51,8 @@ class TheTimeBot extends Base
             $this->command = 'getTimeByLocation';
             $this->arguments = $update->message->location;
         }
+
+        $this->update = $update;
 
         return $this->prepareUserMessage($this->constructBasicMessage(), $update->message->chat);
     }
@@ -77,13 +82,13 @@ class TheTimeBot extends Base
                 $this->logger->info(sprintf('Timezone we must get data from is %s, passing arguments on to get_time_for_timezone', $this->arguments));
             case 'get_time_for_timezone':
                 if (empty($this->arguments)) {
-                    $this->logger->warning('Valid command found but invalid arguments');
+                    $this->logger->info('Valid command found but invalid arguments');
                     $messageText = 'Please provide a valid timezone identifier';
                 } else {
                     try {
                         $this->formatTimezone();
                         $messageText = sprintf('The date & time in *%s* is now *%s hours*', $this->arguments, $this->getTheTime());
-                        $this->logger->info(sprintf('"%s" is a valid timezone, sending information back to user', $this->arguments));
+                        $this->logger->warning(sprintf('"%s" is a valid timezone, sending information back to user', $this->arguments));
                     } catch (\Exception $e) {
                         $this->logger->warning('Invalid timezone detected', ['timezone' => $this->arguments]);
                         $messageText = sprintf(
@@ -98,7 +103,7 @@ class TheTimeBot extends Base
                 $messageText = 'Sorry but this command is not yet implemented, check later!';
                 break;
             default:
-                $this->logger->warning('Invalid command detected', ['command' => $this->command, 'arguments' => $this->arguments]);
+                $this->logger->warning('Invalid command detected', ['command' => $this->command, 'arguments' => $this->arguments, 'text' => $this->update->message->text]);
                 $messageText = 'Sorry but I don\'t understand this option, please check /help';
                 break;
         }
