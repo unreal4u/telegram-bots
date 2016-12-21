@@ -244,7 +244,7 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->debug('[CMD] Inside START');
         $this->response->text = sprintf(
-            _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down (or up)%s%s%s%s'),
+            _('Welcome to the UptimeMonitorBot! This bot will notify you if any of your sites go down (or up)%s%s%s'),
             PHP_EOL,
             'This bot integrates the https://uptimerobot.com services with Telegram, and is unofficial.',
             PHP_EOL
