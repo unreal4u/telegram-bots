@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots;
 
-use Monolog\Handler\StreamHandler;
+use GuzzleHttp\Client;
 use Monolog\Logger;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
 use unreal4u\TelegramBots\Bots\UptimeMonitorBot;
@@ -13,16 +13,26 @@ class RequestHandler {
     /**
      * @var Logger
      */
-    private $logger = null;
+    private $logger;
 
     /**
      * @var Logger
      */
-    private $botLogger = null;
+    private $botLogger;
 
-    public function __construct(Logger $logger, string $requestUri)
+    /**
+     * @var Client
+     */
+    protected $httpClient;
+
+    public function __construct(Logger $logger, string $requestUri, Client $httpClient = null)
     {
         $this->logger = $logger;
+        if ($httpClient === null) {
+            $httpClient = new Client();
+        }
+
+        $this->httpClient = $httpClient;
 
         if (!array_key_exists($requestUri, BOT_TOKENS)) {
             // Can be a request from UptimeMonitor or somebody scanning us
@@ -58,7 +68,7 @@ class RequestHandler {
         try {
             $completeName = 'unreal4u\\TelegramBots\\Bots\\' . $currentBot;
             /** @var $bot \unreal4u\TelegramBots\Bots\Base */
-            $bot = new $completeName($this->botLogger, $botToken);
+            $bot = new $completeName($this->botLogger, $botToken, $this->httpClient);
             $this->botLogger->debug('Incoming data', [$_POST]);
             $bot->createAnswer($_POST);
             $this->botLogger->debug('Created an answer');
@@ -93,7 +103,7 @@ class RequestHandler {
                 $flippedKeys = array_flip(BOT_TOKENS);
 
                 try {
-                    $bot = new UptimeMonitorBot($this->botLogger, $flippedKeys['UptimeMonitorBot']);
+                    $bot = new UptimeMonitorBot($this->botLogger, $flippedKeys['UptimeMonitorBot'], $this->httpClient);
                     $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[1]);
                     /** @var Message $message */
                     $message = $bot->sendResponse();
