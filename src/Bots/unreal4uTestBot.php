@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Bots;
 
+use unreal4u\localization;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
@@ -31,9 +32,19 @@ class unreal4uTestBot extends Base {
                 $this->createSimpleMessageStub();
                 return $this->help();
                 break;
+            case 'get_time_for_timezone':
             case '':
+                #if (strpos($this->message->text, '/') !== 0) {
+                    #return $this->getTimeForTimeZone();
+                #}
+                $this->createSimpleMessageStub();
                 $this->logger->debug('Sent data was the following', [$this->message]);
-                return $this->checkForCities();
+                $this->logger->debug('Object data is', [
+                    'command' => $this->botCommand,
+                    'subArgs' => $this->subArguments,
+                    ''
+                ]);
+                return $this->checkRawInput();
                 break;
             default:
                 return new GetMe();
@@ -78,6 +89,7 @@ class unreal4uTestBot extends Base {
         $messageText .= '- `/get_time_for_timezone America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
         $messageText .= '- `America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
         $messageText .= '- `London` -> Will display a selection for which London you actually mean'.PHP_EOL;
+        $messageText .= '- `Rotterdam` -> Will display the time for the timezone Europe/Amsterdam'.PHP_EOL;
         //$messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
         $messageText .= '- You can also send a location (Works from phone only)';
 
@@ -85,11 +97,44 @@ class unreal4uTestBot extends Base {
         return $this->response;
     }
 
-    private function checkForCities(): SendMessage
+    private function checkRawInput(): SendMessage
     {
-        $this->response->text = 'The input was: '.$this->message->text;
+        $this->response->text = sprintf(
+            'Your input was: %s, which corresponds to the following timezone: %s',
+            $this->message->text,
+            'unknown'
+        );
 
         return $this->response;
+    }
+
+    private function formatTimezone(): TheTimeBot
+    {
+        $return = '';
+        $parts = explode('/', $this->arguments);
+        foreach ($parts as $part) {
+            $return .= ucwords($part) . '/';
+        }
+
+        $this->arguments = trim($return, '/');
+        return $this;
+    }
+
+    private function getTheTime(): string
+    {
+        $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->arguments));
+
+        $localization = new localization();
+        $acceptedTimezone = $localization->setTimezone($this->arguments);
+
+        if ($acceptedTimezone === $this->arguments) {
+            $theTime = $localization->formatSimpleDate(0, $acceptedTimezone).' '.$localization->formatSimpleTime(0, $acceptedTimezone);
+            $theTime .= '; Offset: '.$localization->getTimezoneOffset('hours');
+        } else {
+            throw new \Exception('Invalid timezone, please try again');
+        }
+
+        return $theTime;
     }
 
     /**
