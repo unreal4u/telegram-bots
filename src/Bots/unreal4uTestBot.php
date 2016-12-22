@@ -90,8 +90,8 @@ class unreal4uTestBot extends Base {
         $messageText  = '*Example commands:*'.PHP_EOL;
         $messageText .= '- `/get_time_for_timezone America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
         $messageText .= '- `America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
-        $messageText .= '- `London` -> Will display a selection for which London you actually mean'.PHP_EOL;
-        $messageText .= '- `Rotterdam` -> Will display the time for the timezone Europe/Amsterdam'.PHP_EOL;
+        $messageText .= '- `Rotterdam` -> Will display a selection for which Rotterdam you actually mean'.PHP_EOL;
+        $messageText .= '- `Eindhoven` -> Will display the time for the timezone Europe/Amsterdam'.PHP_EOL;
         //$messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
         $messageText .= '- You can also send a location (Works from phone only)';
 
@@ -119,10 +119,10 @@ class unreal4uTestBot extends Base {
     private function createButton(array $geonamesPlace): Button
     {
         $button = new Button();
-        $button->text = $geonamesPlace['toponymName'];
+        $button->text = $geonamesPlace['toponymName'].', '.$geonamesPlace['countryName'];
         $button->callback_data = json_encode([
-            'lat' => $geonamesPlace['lat'],
-            'lon' => $geonamesPlace['lng'],
+            'lt' => $geonamesPlace['lat'],
+            'ln' => $geonamesPlace['lng'],
         ]);
 
         return $button;
@@ -131,8 +131,9 @@ class unreal4uTestBot extends Base {
     private function performGeonamesSearch(): string
     {
         $answer = $this->httpClient->get(sprintf(
-            'http://api.geonames.org/searchJSON?name=%s&maxRows=%s&username=%s',
+            'http://api.geonames.org/searchJSON?name=%s&featureCode=%s&maxRows=%s&username=%s',
             urlencode($this->message->text),
+            'PPL',
             6,
             GEONAMES_API_USERID
         ));
