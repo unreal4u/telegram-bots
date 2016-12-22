@@ -119,7 +119,7 @@ class unreal4uTestBot extends Base {
             GEONAMES_API_USERID
         ));
         $decodedJson = json_decode((string)$answer->getBody());
-        $this->logger->info('Performed call to Geonames', $decodedJson);
+        $this->logger->info('Performed call to Geonames', (array)$decodedJson);
 
         return '';
     }
