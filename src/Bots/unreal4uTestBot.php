@@ -8,8 +8,14 @@ use unreal4u\localization;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
 
 class unreal4uTestBot extends Base {
+    private $latitude = 0.0;
+
+    private $longitude = 0.0;
+
     /**
      * @param array $postData
      * @return TelegramMethods
@@ -110,16 +116,55 @@ class unreal4uTestBot extends Base {
         return $this->response;
     }
 
+    private function createButton(array $geonamesPlace): Button
+    {
+        $button = new Button();
+        $button->text = $geonamesPlace['toponymName'];
+        $button->callback_data = json_encode([
+            'name' => $geonamesPlace['toponymName'],
+            'lat' => $geonamesPlace['lat'],
+            'lon' => $geonamesPlace['lng'],
+        ]);
+
+        return $button;
+    }
+
     private function performGeonamesSearch(): string
     {
         $answer = $this->httpClient->get(sprintf(
-            'http://api.geonames.org/searchJSON?q=%s&maxRows=%s&username=%s',
+            'http://api.geonames.org/searchJSON?name=%s&maxRows=%s&username=%s',
             urlencode($this->message->text),
             6,
             GEONAMES_API_USERID
         ));
-        $decodedJson = json_decode((string)$answer->getBody());
-        $this->logger->info('Performed call to Geonames', (array)$decodedJson);
+        $geonamesResponse = json_decode((string)$answer->getBody(), true);
+        $this->logger->info('Completed call to Geonames');
+
+        if (count($geonamesResponse) > 1) {
+            $i = 0;
+            $inlineKeyboardMarkup = new Markup();
+            $firstButton = $secondButton = null;
+
+            foreach ($geonamesResponse['geonames'] as $geoNamesPlace) {
+                if ($i !== 0 && $i % 2 == 0) {
+                    $inlineKeyboardMarkup->inline_keyboard[] = [$firstButton, $secondButton];
+                    $firstButton = $secondButton = null;
+                }
+
+                if ($i % 2 == 0) {
+                    $firstButton = $this->createButton($geoNamesPlace);
+                } else {
+                    $secondButton = $this->createButton($geoNamesPlace);
+                }
+
+                $i++;
+            }
+
+            $this->response->reply_markup = $inlineKeyboardMarkup;
+        } else {
+            $this->latitude = $geonamesResponse[0]['lat'];
+            $this->longitude = $geonamesResponse[0]['lng'];
+        }
 
         return '';
     }
