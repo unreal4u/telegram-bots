@@ -135,14 +135,17 @@ class unreal4uTestBot extends Base {
             GEONAMES_API_USERID
         ));
         $geonamesResponse = json_decode((string)$answer->getBody(), true);
-        $this->logger->info('Completed call to Geonames', ['totalResults' => $geonamesResponse['totalResultsCount']]);
+        $this->logger->info('Completed call to GeoNames', [
+            'query' => $this->message->text,
+            'totalResults' => $geonamesResponse['totalResultsCount']
+        ]);
 
-        if (count($geonamesResponse['totalResultsCount']) === '0') {
+        if ($geonamesResponse['totalResultsCount'] === 0) {
             $this->response->text = sprintf(
                 'No populated places called %s have been found. Maybe try another search?',
                 $this->message->text
             );
-        } elseif (count($geonamesResponse['totalResultsCount']) > 1) {
+        } elseif ($geonamesResponse['totalResultsCount'] > 1) {
             $this->response->text = sprintf(
                 'There was more than 1 result for your query, please select the most appropiate one from the list below'
             );
@@ -186,6 +189,11 @@ class unreal4uTestBot extends Base {
         $decodedJson = json_decode((string)$answer->getBody());
 
         $this->timezoneId = $decodedJson->timezoneId;
+        $this->logger->info('Completed call to GeoNames', [
+            'lat' => $this->latitude,
+            'lon' => $this->longitude,
+            'timezoneId' => $this->timezoneId,
+        ]);
 
         $this->formatTimezone();
         $this->response->text = sprintf(
