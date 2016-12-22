@@ -135,7 +135,7 @@ class unreal4uTestBot extends Base {
             GEONAMES_API_USERID
         ));
         $geonamesResponse = json_decode((string)$answer->getBody(), true);
-        $this->logger->info('Completed call to Geonames');
+        $this->logger->info('Completed call to Geonames', ['totalResults' => $geonamesResponse['totalResultsCount']]);
 
         if (count($geonamesResponse['totalResultsCount']) === '0') {
             $this->response->text = sprintf(
