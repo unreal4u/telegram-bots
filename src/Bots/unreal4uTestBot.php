@@ -121,7 +121,6 @@ class unreal4uTestBot extends Base {
         $button = new Button();
         $button->text = $geonamesPlace['toponymName'];
         $button->callback_data = json_encode([
-            'name' => $geonamesPlace['toponymName'],
             'lat' => $geonamesPlace['lat'],
             'lon' => $geonamesPlace['lng'],
         ]);
