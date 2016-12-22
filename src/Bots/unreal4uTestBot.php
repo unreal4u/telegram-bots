@@ -137,7 +137,7 @@ class unreal4uTestBot extends Base {
         $geonamesResponse = json_decode((string)$answer->getBody(), true);
         $this->logger->info('Completed call to Geonames');
 
-        if (count($geonamesResponse) > 1) {
+        if (count($geonamesResponse['geonames']) > 1) {
             $this->response->text = sprintf(
                 'There was more than 1 result for your query, please select the most appropiate one from the list below'
             );
