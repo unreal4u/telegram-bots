@@ -116,7 +116,10 @@ class unreal4uTestBot extends Base {
     private function createButton(array $geonamesPlace): Button
     {
         $button = new Button();
-        $button->text = $geonamesPlace['toponymName'].', '.$geonamesPlace['countryName'];
+        $button->text =
+            $geonamesPlace['toponymName'].', '.
+            $geonamesPlace['adminName1'].', '.
+            $geonamesPlace['countryName'];
         $button->callback_data = json_encode([
             'lt' => $geonamesPlace['lat'],
             'ln' => $geonamesPlace['lng'],
@@ -149,23 +152,10 @@ class unreal4uTestBot extends Base {
             $this->response->text = sprintf(
                 'There was more than 1 result for your query, please select the most appropiate one from the list below'
             );
-            $i = 0;
             $inlineKeyboardMarkup = new Markup();
-            $firstButton = $secondButton = null;
 
             foreach ($geonamesResponse['geonames'] as $geoNamesPlace) {
-                if ($i !== 0 && $i % 2 == 0) {
-                    $inlineKeyboardMarkup->inline_keyboard[] = [$firstButton, $secondButton];
-                    $firstButton = $secondButton = null;
-                }
-
-                if ($i % 2 == 0) {
-                    $firstButton = $this->createButton($geoNamesPlace);
-                } else {
-                    $secondButton = $this->createButton($geoNamesPlace);
-                }
-
-                $i++;
+                $inlineKeyboardMarkup->inline_keyboard[] = [$this->createButton($geoNamesPlace)];
             }
 
             $this->response->reply_markup = $inlineKeyboardMarkup;
