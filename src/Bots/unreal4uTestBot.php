@@ -16,6 +16,8 @@ class unreal4uTestBot extends Base {
 
     private $longitude = 0.0;
 
+    private $timezoneId = '';
+
     /**
      * @param array $postData
      * @return TelegramMethods
@@ -128,7 +130,7 @@ class unreal4uTestBot extends Base {
         return $button;
     }
 
-    private function performGeonamesSearch(): string
+    private function performGeonamesSearch(): SendMessage
     {
         $answer = $this->httpClient->get(sprintf(
             'http://api.geonames.org/searchJSON?name=%s&featureCode=%s&maxRows=%s&username=%s',
@@ -141,6 +143,9 @@ class unreal4uTestBot extends Base {
         $this->logger->info('Completed call to Geonames');
 
         if (count($geonamesResponse) > 1) {
+            $this->response->text = sprintf(
+                'There was more than 1 result for your query, please select the most appropiate one from the list below'
+            );
             $i = 0;
             $inlineKeyboardMarkup = new Markup();
             $firstButton = $secondButton = null;
@@ -164,32 +169,54 @@ class unreal4uTestBot extends Base {
         } else {
             $this->latitude = $geonamesResponse[0]['lat'];
             $this->longitude = $geonamesResponse[0]['lng'];
+            $this->getTimeForLatitude();
         }
 
-        return '';
+        return $this->response;
+    }
+
+    private function getTimeForLatitude(): SendMessage
+    {
+        $answer = $this->httpClient->get(sprintf(
+            'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
+            $this->latitude,
+            $this->longitude,
+            GEONAMES_API_USERID
+        ));
+        $decodedJson = json_decode((string)$answer->getBody());
+
+        $this->timezoneId = $decodedJson->timezoneId;
+
+        $this->formatTimezone();
+        $this->response->text = sprintf('The date & time in *%s* is now *%s hours*', $this->arguments, $this->getTheTime());
+
+        return $this->response;
     }
 
     private function formatTimezone(): TheTimeBot
     {
         $return = '';
-        $parts = explode('/', $this->arguments);
+        $parts = explode('/', $this->timezoneId);
         foreach ($parts as $part) {
             $return .= ucwords($part) . '/';
         }
 
-        $this->arguments = trim($return, '/');
+        $this->timezoneId = trim($return, '/');
         return $this;
     }
 
     private function getTheTime(): string
     {
-        $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->arguments));
+        $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->timezoneId));
 
         $localization = new localization();
-        $acceptedTimezone = $localization->setTimezone($this->arguments);
+        $acceptedTimezone = $localization->setTimezone($this->timezoneId);
 
-        if ($acceptedTimezone === $this->arguments) {
-            $theTime = $localization->formatSimpleDate(0, $acceptedTimezone).' '.$localization->formatSimpleTime(0, $acceptedTimezone);
+        if ($acceptedTimezone === $this->timezoneId) {
+            $theTime =
+                $localization->formatSimpleDate(0, $acceptedTimezone).
+                ' '.
+                $localization->formatSimpleTime(0, $acceptedTimezone);
             $theTime .= '; Offset: '.$localization->getTimezoneOffset('hours');
         } else {
             throw new \Exception('Invalid timezone, please try again');
