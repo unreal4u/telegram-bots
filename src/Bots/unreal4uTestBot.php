@@ -162,8 +162,8 @@ class unreal4uTestBot extends Base {
 
             $this->response->reply_markup = $inlineKeyboardMarkup;
         } else {
-            $this->latitude = $geonamesResponse['geonames']['lat'];
-            $this->longitude = $geonamesResponse['geonames']['lng'];
+            $this->latitude = $geonamesResponse['geonames'][0]['lat'];
+            $this->longitude = $geonamesResponse['geonames'][0]['lng'];
             $this->getTimeForLatitude();
         }
 
