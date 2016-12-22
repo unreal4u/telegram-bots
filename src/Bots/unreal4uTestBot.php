@@ -192,7 +192,7 @@ class unreal4uTestBot extends Base {
         return $this->response;
     }
 
-    private function formatTimezone(): TheTimeBot
+    private function formatTimezone(): unreal4uTestBot
     {
         $return = '';
         $parts = explode('/', $this->timezoneId);
