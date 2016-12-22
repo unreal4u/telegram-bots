@@ -34,15 +34,11 @@ class unreal4uTestBot extends Base {
                 break;
             case 'get_time_for_timezone':
             case '':
-                #if (strpos($this->message->text, '/') !== 0) {
-                    #return $this->getTimeForTimeZone();
-                #}
                 $this->createSimpleMessageStub();
-                $this->logger->debug('Sent data was the following', [$this->message]);
                 $this->logger->debug('Object data is', [
                     'command' => $this->botCommand,
                     'subArgs' => $this->subArguments,
-                    ''
+                    'text' => $this->message->text,
                 ]);
                 return $this->checkRawInput();
                 break;
@@ -99,13 +95,33 @@ class unreal4uTestBot extends Base {
 
     private function checkRawInput(): SendMessage
     {
+        if ($this->botCommand === '') {
+            $timezone = $this->performGeonamesSearch();
+        } else {
+            $timezone = '[botCommand given]';
+        }
+
         $this->response->text = sprintf(
             'Your input was: %s, which corresponds to the following timezone: %s',
             $this->message->text,
-            'unknown'
+            $timezone
         );
 
         return $this->response;
+    }
+
+    private function performGeonamesSearch(): string
+    {
+        $answer = $this->httpClient->get(sprintf(
+            'http://api.geonames.org/searchJSON?q=%s&maxRows=%s&username=%s',
+            urlencode($this->message->text),
+            6,
+            GEONAMES_API_USERID
+        ));
+        $decodedJson = json_decode((string)$answer->getBody());
+        $this->logger->info('Performed call to Geonames', $decodedJson);
+
+        return '';
     }
 
     private function formatTimezone(): TheTimeBot
