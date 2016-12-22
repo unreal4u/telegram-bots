@@ -104,16 +104,11 @@ class unreal4uTestBot extends Base {
     private function checkRawInput(): SendMessage
     {
         if ($this->botCommand === '') {
-            $timezone = $this->performGeonamesSearch();
+            $this->performGeonamesSearch();
         } else {
-            $timezone = '[botCommand given]';
+            #$timezone = '[botCommand given]';
+            // Do nothing yet?
         }
-
-        $this->response->text = sprintf(
-            'Your input was: %s, which corresponds to the following timezone: %s',
-            $this->message->text,
-            $timezone
-        );
 
         return $this->response;
     }
@@ -188,7 +183,11 @@ class unreal4uTestBot extends Base {
         $this->timezoneId = $decodedJson->timezoneId;
 
         $this->formatTimezone();
-        $this->response->text = sprintf('The date & time in *%s* is now *%s hours*', $this->arguments, $this->getTheTime());
+        $this->response->text = sprintf(
+            'The date & time in *%s* is now *%s hours*',
+            $this->timezoneId,
+            $this->getTheTime()
+        );
 
         return $this->response;
     }
