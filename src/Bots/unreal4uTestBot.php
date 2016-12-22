@@ -137,7 +137,7 @@ class unreal4uTestBot extends Base {
         $geonamesResponse = json_decode((string)$answer->getBody(), true);
         $this->logger->info('Completed call to Geonames');
 
-        if (count($geonamesResponse['totalResultsCount']) === 0) {
+        if (count($geonamesResponse['totalResultsCount']) === '0') {
             $this->response->text = sprintf(
                 'No populated places called %s have been found. Maybe try another search?',
                 $this->message->text
