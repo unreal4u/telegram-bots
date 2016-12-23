@@ -42,7 +42,9 @@ class unreal4uTestBot extends Base {
                 $this->createSimpleMessageStub();
                 return $this->help();
                 break;
-            case 'get_time_for_timezone':
+            case 'get_time_for_timezone': // The original command
+            case 'get_time_for_latitude': // Alias
+            case 'get': // Alias
             case '':
                 $this->logger->debug('Object data is', [
                     'command' => $this->botCommand,
@@ -91,7 +93,7 @@ class unreal4uTestBot extends Base {
     {
         $this->logger->debug('[CMD] Inside HELP');
         $messageText  = '*Example commands:*'.PHP_EOL;
-        $messageText .= '- `/get_time_for_timezone America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
+        $messageText .= '- `/get America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
         $messageText .= '- `America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
         $messageText .= '- `Rotterdam` -> Will display a selection for which Rotterdam you actually mean'.PHP_EOL;
         $messageText .= '- `Eindhoven` -> Will display the time for the timezone Europe/Amsterdam'.PHP_EOL;
@@ -100,6 +102,17 @@ class unreal4uTestBot extends Base {
 
         $this->response->text .= $messageText;
         return $this->response;
+    }
+
+    private function fillFinalResponse(): unreal4uTestBot
+    {
+        $this->response->text = sprintf(
+            'The date & time in *%s* is now *%s hours*',
+            $this->timezoneId,
+            $this->getTheTime()
+        );
+
+        return $this;
     }
 
     private function checkRawInput(): SendMessage
@@ -123,7 +136,7 @@ class unreal4uTestBot extends Base {
             }
         } else {
             // Best case scenario: we have a direct timezoneId
-
+            $this->fillFinalResponse();
         }
 
         return $this->response;
@@ -137,23 +150,19 @@ class unreal4uTestBot extends Base {
             $geonamesPlace['adminName1'].', '.
             $geonamesPlace['countryName'];
 
-        $button->callback_data = ''.json_encode([
-            'lt' => $geonamesPlace['lat'],
-            'ln' => $geonamesPlace['lng'],
-        ]);
+        $button->callback_data = 'get_time_for_timezone?lt='.$geonamesPlace['lat'].'&ln='.$geonamesPlace['lng'];
 
         return $button;
     }
 
     private function decodeCallbackContents(): unreal4uTestBot
     {
-        $decodedResponse = json_decode($this->subArguments);
-        if ($decodedResponse === null || !isset($decodedResponse->lt, $decodedResponse->ln)) {
-            throw new InvalidCallbackContents(json_last_error_msg(), json_last_error());
+        if (!isset($this->subArguments['lt'], $this->subArguments['ln'])) {
+            throw new InvalidCallbackContents('No lt or ln are set in callback');
         }
 
-        $this->latitude = $decodedResponse->lt;
-        $this->longitude = $decodedResponse->ln;
+        $this->latitude = $this->subArguments['lt'];
+        $this->longitude = $this->subArguments['ln'];
 
         return $this;
     }
@@ -247,11 +256,7 @@ class unreal4uTestBot extends Base {
                 'timezoneId' => $decodedJson->timezoneId,
             ]);
 
-            $this->response->text = sprintf(
-                'The date & time in *%s* is now *%s hours*',
-                $this->timezoneId,
-                $this->getTheTime()
-            );
+            $this->fillFinalResponse();
         } else {
             $this->logger->error('Invalid timezoneId returned from Geonames', [
                 'lat' => $this->latitude,
