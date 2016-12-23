@@ -6,7 +6,6 @@ namespace unreal4u\TelegramBots\Bots;
 
 use Ramsey\Uuid\Uuid;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
-use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Methods\SendPhoto;
@@ -484,21 +483,6 @@ class UptimeMonitorBot extends Base {
             'monitorId' => $this->monitor->getId(),
             'chatId' => $this->monitor->getChatId(),
         ]);
-
-        return $this;
-    }
-
-    /**
-     * Creates an EditMessageText object instead of a SendMessage
-     *
-     * @return UptimeMonitorBot
-     */
-    private function createEditableMessage(): UptimeMonitorBot
-    {
-        $this->logger->debug('Creating new editable message object');
-        $this->response = new EditMessageText();
-        $this->response->message_id = $this->message->message_id;
-        $this->response->chat_id = $this->chatId;
 
         return $this;
     }

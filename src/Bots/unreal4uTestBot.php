@@ -120,6 +120,7 @@ class unreal4uTestBot extends Base {
         if ($this->isValidTimeZone($this->message->text) === false) {
             if (!empty($this->subArguments)) {
                 try {
+                    $this->createEditableMessage();
                     $this->decodeCallbackContents();
                     $this->getTimeForLatitude();
                 } catch (\Exception $e) {
@@ -136,6 +137,7 @@ class unreal4uTestBot extends Base {
             }
         } else {
             // Best case scenario: we have a direct timezoneId
+            $this->createSimpleMessageStub();
             $this->fillFinalResponse();
         }
 
@@ -150,7 +152,7 @@ class unreal4uTestBot extends Base {
             $geonamesPlace['adminName1'].', '.
             $geonamesPlace['countryName'];
 
-        $button->callback_data = 'get_time_for_timezone?lt='.$geonamesPlace['lat'].'&ln='.$geonamesPlace['lng'];
+        $button->callback_data = 'get?lt='.$geonamesPlace['lat'].'&ln='.$geonamesPlace['lng'];
 
         return $button;
     }
@@ -327,9 +329,9 @@ class unreal4uTestBot extends Base {
     {
         return [
             'start',
-            'setup',
-            'get_notify_url',
-            'regenerate_notify_url',
+            'get',
+            'get_time_for_timezone',
+            'get_time_for_latitude',
             'help',
         ];
     }

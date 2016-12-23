@@ -9,6 +9,7 @@ use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
+use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Types\CallbackQuery;
@@ -294,6 +295,21 @@ abstract class Base implements Bots
         $this->response->parse_mode = 'Markdown';
         // Send short, concise messages without interference of links
         $this->response->disable_web_page_preview = true;
+
+        return $this;
+    }
+
+    /**
+     * Creates an EditMessageText object instead of a SendMessage
+     *
+     * @return UptimeMonitorBot
+     */
+    final protected function createEditableMessage(): UptimeMonitorBot
+    {
+        $this->logger->debug('Creating new editable message object');
+        $this->response = new EditMessageText();
+        $this->response->message_id = $this->message->message_id;
+        $this->response->chat_id = $this->chatId;
 
         return $this;
     }
