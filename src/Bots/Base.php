@@ -304,7 +304,7 @@ abstract class Base implements Bots
      *
      * @return UptimeMonitorBot
      */
-    final protected function createEditableMessage(): UptimeMonitorBot
+    final protected function createEditableMessage(): Base
     {
         $this->logger->debug('Creating new editable message object');
         $this->response = new EditMessageText();
