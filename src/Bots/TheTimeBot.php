@@ -88,7 +88,7 @@ class TheTimeBot extends Base
                     try {
                         $this->formatTimezone();
                         $messageText = sprintf('The date & time in *%s* is now *%s hours*', $this->arguments, $this->getTheTime());
-                        $this->logger->warning(sprintf('"%s" is a valid timezone, sending information back to user', $this->arguments));
+                        $this->logger->warning(sprintf('[OK] "%s" is a valid timezone, sending information back to user', $this->arguments));
                     } catch (\Exception $e) {
                         $this->logger->warning('Invalid timezone detected', ['timezone' => $this->arguments]);
                         $messageText = sprintf(
@@ -125,12 +125,13 @@ class TheTimeBot extends Base
     protected function formatTimezone(): TheTimeBot
     {
         $return = '';
+        $this->arguments = str_replace('_', ' ', $this->arguments);
         $parts = explode('/', $this->arguments);
         foreach ($parts as $part) {
             $return .= ucwords($part) . '/';
         }
 
-        $this->arguments = trim($return, '/');
+        $this->arguments = trim(str_replace(' ', '_', $return), '/');
         return $this;
     }
 

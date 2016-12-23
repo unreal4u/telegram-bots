@@ -10,6 +10,8 @@ use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
+use unreal4u\TelegramBots\Exceptions\InvalidCallbackContents;
+use unreal4u\TelegramBots\Exceptions\InvalidTimezoneId;
 
 class unreal4uTestBot extends Base {
     private $latitude = 0.0;
@@ -42,7 +44,6 @@ class unreal4uTestBot extends Base {
                 break;
             case 'get_time_for_timezone':
             case '':
-                $this->createSimpleMessageStub();
                 $this->logger->debug('Object data is', [
                     'command' => $this->botCommand,
                     'subArgs' => $this->subArguments,
@@ -103,11 +104,26 @@ class unreal4uTestBot extends Base {
 
     private function checkRawInput(): SendMessage
     {
-        if ($this->botCommand === '') {
-            $this->performGeonamesSearch();
+        if ($this->isValidTimeZone($this->message->text) === false) {
+            if (!empty($this->subArguments)) {
+                try {
+                    $this->decodeCallbackContents();
+                    $this->getTimeForLatitude();
+                } catch (\Exception $e) {
+                    $this->logger->error('Problem while decoding callback contents', [
+                        'errorMsg' => $e->getMessage(),
+                        'errorCode' => $e->getCode(),
+                        'subArguments' => $this->subArguments,
+                    ]);
+                }
+            } else {
+                // Worst case scenario: we must perform a Geonames search
+                $this->createSimpleMessageStub();
+                $this->performGeonamesSearch();
+            }
         } else {
-            #$timezone = '[botCommand given]';
-            // Do nothing yet?
+            // Best case scenario: we have a direct timezoneId
+
         }
 
         return $this->response;
@@ -120,7 +136,8 @@ class unreal4uTestBot extends Base {
             $geonamesPlace['toponymName'].', '.
             $geonamesPlace['adminName1'].', '.
             $geonamesPlace['countryName'];
-        $button->callback_data = json_encode([
+
+        $button->callback_data = ''.json_encode([
             'lt' => $geonamesPlace['lat'],
             'ln' => $geonamesPlace['lng'],
         ]);
@@ -128,16 +145,65 @@ class unreal4uTestBot extends Base {
         return $button;
     }
 
-    private function performGeonamesSearch(): SendMessage
+    private function decodeCallbackContents(): unreal4uTestBot
+    {
+        $decodedResponse = json_decode($this->subArguments);
+        if ($decodedResponse === null || !isset($decodedResponse->lt, $decodedResponse->ln)) {
+            throw new InvalidCallbackContents(json_last_error_msg(), json_last_error());
+        }
+
+        $this->latitude = $decodedResponse->lt;
+        $this->longitude = $decodedResponse->ln;
+
+        return $this;
+    }
+
+    private function doGeonamesCityLookup(): array
+    {
+        $url = sprintf(
+            'http://api.geonames.org/searchJSON?q=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&cities=%s&orderby=%s&username=%s',
+            urlencode($this->message->text),
+            6,
+            'PPLA1',
+            'PPLA2',
+            'PPLA3',
+            'PPLA4',
+            'PPL',
+            'PPLC',
+            'PCLI',
+            'cities1000',
+            'population',
+            GEONAMES_API_USERID
+        );
+        $answer = $this->httpClient->get($url);
+        return json_decode((string)$answer->getBody(), true);
+    }
+
+    private function doGeonamesTimezoneIdLookup(): \stdClass
     {
         $answer = $this->httpClient->get(sprintf(
-            'http://api.geonames.org/searchJSON?name=%s&featureCode=%s&maxRows=%s&username=%s',
-            urlencode($this->message->text),
-            'PPL',
-            6,
+            'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
+            $this->latitude,
+            $this->longitude,
             GEONAMES_API_USERID
         ));
-        $geonamesResponse = json_decode((string)$answer->getBody(), true);
+        return json_decode((string)$answer->getBody());
+    }
+
+    private function createGeonamesInfoButton(array $geonamesPlaces): Markup
+    {
+        $inlineKeyboardMarkup = new Markup();
+
+        foreach ($geonamesPlaces['geonames'] as $geoNamesPlace) {
+            $inlineKeyboardMarkup->inline_keyboard[] = [$this->createButton($geoNamesPlace)];
+        }
+
+        return $inlineKeyboardMarkup;
+    }
+
+    private function performGeonamesSearch(): SendMessage
+    {
+        $geonamesResponse = $this->doGeonamesCityLookup();
         $this->logger->info('Completed call to GeoNames', [
             'query' => $this->message->text,
             'totalResults' => $geonamesResponse['totalResultsCount']
@@ -152,59 +218,80 @@ class unreal4uTestBot extends Base {
             $this->response->text = sprintf(
                 'There was more than 1 result for your query, please select the most appropiate one from the list below'
             );
-            $inlineKeyboardMarkup = new Markup();
-
-            foreach ($geonamesResponse['geonames'] as $geoNamesPlace) {
-                $inlineKeyboardMarkup->inline_keyboard[] = [$this->createButton($geoNamesPlace)];
-            }
-
-            $this->response->reply_markup = $inlineKeyboardMarkup;
+            $this->response->reply_markup = $this->createGeonamesInfoButton($geonamesResponse);
         } else {
             $this->latitude = $geonamesResponse['geonames'][0]['lat'];
             $this->longitude = $geonamesResponse['geonames'][0]['lng'];
+            // Once we have the latitude, we can perform another geonames lookup to get the timezoneId
             $this->getTimeForLatitude();
         }
 
         return $this->response;
     }
 
+    /**
+     * Get's the time for the already set coordinates
+     *
+     * @return SendMessage
+     * @throws InvalidTimezoneId
+     * @throws \Exception
+     */
     private function getTimeForLatitude(): SendMessage
     {
-        $answer = $this->httpClient->get(sprintf(
-            'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
-            $this->latitude,
-            $this->longitude,
-            GEONAMES_API_USERID
-        ));
-        $decodedJson = json_decode((string)$answer->getBody());
+        $decodedJson = $this->doGeonamesTimezoneIdLookup();
 
-        $this->timezoneId = $decodedJson->timezoneId;
-        $this->logger->info('Completed call to GeoNames', [
-            'lat' => $this->latitude,
-            'lon' => $this->longitude,
-            'timezoneId' => $this->timezoneId,
-        ]);
+        if ($this->isValidTimeZone($decodedJson->timezoneId)) {
+            $this->logger->info('Completed call to GeoNames', [
+                'lat' => $this->latitude,
+                'lon' => $this->longitude,
+                'timezoneId' => $decodedJson->timezoneId,
+            ]);
 
-        $this->formatTimezone();
-        $this->response->text = sprintf(
-            'The date & time in *%s* is now *%s hours*',
-            $this->timezoneId,
-            $this->getTheTime()
-        );
+            $this->response->text = sprintf(
+                'The date & time in *%s* is now *%s hours*',
+                $this->timezoneId,
+                $this->getTheTime()
+            );
+        } else {
+            $this->logger->error('Invalid timezoneId returned from Geonames', [
+                'lat' => $this->latitude,
+                'lon' => $this->longitude,
+                'timezoneId' => $decodedJson->timezoneId,
+            ]);
+
+            throw new InvalidTimezoneId(sprintf('The given timezone ("%s") is not valid', $decodedJson->timezoneId));
+        }
 
         return $this->response;
     }
 
-    private function formatTimezone(): unreal4uTestBot
+    /**
+     * Validates a timezoneId
+     *
+     * @param string $timezoneCandidate
+     * @return bool
+     */
+    private function isValidTimeZone(string $timezoneCandidate): bool
     {
         $return = '';
+        // Some timezones have underscores as part of their name... which must be converted to ucwords ¬¬
+        $this->timezoneId = str_replace('_', ' ', $timezoneCandidate);
         $parts = explode('/', $this->timezoneId);
         foreach ($parts as $part) {
+            // Convert all first letter of each word to uppercase
             $return .= ucwords($part) . '/';
         }
 
-        $this->timezoneId = trim($return, '/');
-        return $this;
+        // Convert all spaces back to underscores... ¬¬
+        $this->timezoneId = trim(str_replace(' ', '_', $return), '/');
+
+        $localization = new localization();
+        if ($localization->isValidTimeZone($this->timezoneId)) {
+            return true;
+        } else {
+            $this->timezoneId = '';
+            return false;
+        }
     }
 
     private function getTheTime(): string
