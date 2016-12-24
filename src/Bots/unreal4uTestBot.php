@@ -52,10 +52,13 @@ class unreal4uTestBot extends Base {
                     'subArgs' => $this->subArguments,
                     'text' => $this->message->text,
                 ]);
+
+                // Check for an empty command
                 if ('/'.$this->botCommand === trim($this->message->text)) {
                     return $this->informAboutEmptyCommand();
                 }
 
+                // We must parse the unsafe data
                 return $this->checkRawInput();
                 break;
             default:
@@ -131,7 +134,14 @@ class unreal4uTestBot extends Base {
 
     private function checkRawInput(): TelegramMethods
     {
-        if ($this->isValidTimeZone($this->subArguments[0]) === false) {
+        // Everything can come in with or without a bot command
+        if (!isset($this->subArguments[0])) {
+            $argument = $this->message->text;
+        } else {
+            $argument = $this->subArguments[0];
+        }
+
+        if ($this->isValidTimeZone($argument) === false) {
             if (!empty($this->subArguments)) {
                 try {
                     $this->createEditableMessage();
