@@ -115,7 +115,7 @@ class unreal4uTestBot extends Base {
         return $this;
     }
 
-    private function checkRawInput(): SendMessage
+    private function checkRawInput(): TelegramMethods
     {
         if ($this->isValidTimeZone($this->message->text) === false) {
             if (!empty($this->subArguments)) {
