@@ -35,15 +35,15 @@ class unreal4uTestBot extends Base {
             return $this->invalidUser();
         }
 
+        // Default: a simple message
+        $this->createSimpleMessageStub();
         switch ($this->botCommand) {
             case 'start':
-                $this->createSimpleMessageStub();
                 return $this->start();
                 break;
             case '/end':
                 return new GetMe();
             case 'help':
-                $this->createSimpleMessageStub();
                 return $this->help();
                 break;
             case 'get_time_for_latitude':
@@ -182,12 +182,10 @@ class unreal4uTestBot extends Base {
                 $this->sendThinkingCommand();
 
                 // Worst case scenario: we must perform a Geonames search
-                $this->createSimpleMessageStub();
                 $this->performGeonamesSearch();
             }
         } else {
             // Best case scenario: we have a direct timezoneId
-            $this->createSimpleMessageStub();
             $this->fillFinalResponse();
         }
 
