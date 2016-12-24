@@ -366,7 +366,7 @@ abstract class Base implements Bots
                     $this->botCommand = substr($this->botCommand, 0, strpos($this->botCommand, '@'));
                 }
                 $this->logger->debug('Found a bot_command within the entities', [
-                    'command' => $this->botCommand,
+                    'finalCommand' => $this->botCommand,
                     'entity' => [
                         'offset' => $entity->offset,
                         'length' => $entity->length,

@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Bots;
 
+use Psr\Http\Message\ResponseInterface;
 use unreal4u\localization;
 use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
@@ -51,7 +52,7 @@ class unreal4uTestBot extends Base {
                     'subArgs' => $this->subArguments,
                     'text' => $this->message->text,
                 ]);
-                if ($this->botCommand === '/'.trim($this->message->text)) {
+                if ('/'.$this->botCommand === trim($this->message->text)) {
                     return $this->informAboutEmptyCommand();
                 }
 
@@ -141,6 +142,8 @@ class unreal4uTestBot extends Base {
                         'errorMsg' => $e->getMessage(),
                         'errorCode' => $e->getCode(),
                         'subArguments' => $this->subArguments,
+                        'botCommand' => $this->botCommand,
+                        'messageText' => $this->message->text,
                     ]);
                 }
             } else {
@@ -184,12 +187,24 @@ class unreal4uTestBot extends Base {
         return $this;
     }
 
+    private function performAPIRequest(string $url, string $type): ResponseInterface
+    {
+        $this->logger->debug('About to perform '.$type.' search', [$url]);
+        $beginTime = microtime(true);
+        $answer = $this->httpClient->get($url);
+        $endTime = microtime(true);
+        $this->logger->debug('Finished performing request', ['totalTime' => $endTime - $beginTime]);
+
+        return $answer;
+    }
+
     private function doGeonamesCityLookup(): array
     {
         $url = sprintf(
-            'http://api.geonames.org/searchJSON?q=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&cities=%s&orderby=%s&username=%s',
+            'http://api.geonames.org/searchJSON?q=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&cities=%s&orderby=%s&username=%s',
             urlencode($this->message->text),
             6,
+            'ADM3',
             'PPLA1',
             'PPLA2',
             'PPLA3',
@@ -201,19 +216,20 @@ class unreal4uTestBot extends Base {
             'population',
             GEONAMES_API_USERID
         );
-        $this->logger->debug('Filled in URL, about to perform search', [$url]);
-        $answer = $this->httpClient->get($url);
+        $answer = $this->performAPIRequest($url, 'city');
         return json_decode((string)$answer->getBody(), true);
     }
 
     private function doGeonamesTimezoneIdLookup(): \stdClass
     {
-        $answer = $this->httpClient->get(sprintf(
+        $url = sprintf(
             'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
             $this->latitude,
             $this->longitude,
             GEONAMES_API_USERID
-        ));
+        );
+        $answer = $this->performAPIRequest($url, 'timezone');
+
         return json_decode((string)$answer->getBody());
     }
 
