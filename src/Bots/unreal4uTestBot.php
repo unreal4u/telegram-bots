@@ -89,7 +89,7 @@ class unreal4uTestBot extends Base {
     {
         $this->logger->debug('[CMD] Inside START');
         $this->response->text = sprintf(
-            _('Welcome! Consult /help at any time to get a list of command and options.')
+            _('Welcome! Consult `/help` at any time to get a list of command and options.')
         );
 
         // Complete with the text from the help page

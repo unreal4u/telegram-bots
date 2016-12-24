@@ -1,0 +1,1 @@
+{"update_id":174123947,"message":{"message_id":1036,"from":{"id":12345678,"first_name":"Camilo","last_name":"Sperberg","username":"unreal4u"},"chat":{"id":12341234,"first_name":"Camilo","last_name":"Sperberg","username":"unreal4u","type":"private"},"date":1482545232,"text":"/get_time_for_timezone America/Santiago","entities":[{"type":"bot_command","offset":0,"length":22}]}}

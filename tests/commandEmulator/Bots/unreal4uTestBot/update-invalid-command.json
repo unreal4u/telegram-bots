@@ -1,0 +1,1 @@
+{"update_id":758442025,"message":{"message_id":52,"from":{"id":12345678,"first_name":"Camilo","last_name":"Sperberg","username":"unreal4u"},"chat":{"id":-12341234,"title":"My Super Group","type":"group","all_members_are_administrators":true},"date":1480365239,"text":"/kill@pato","entities":[{"type":"bot_command","offset":0,"length":10}]}}
