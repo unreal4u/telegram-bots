@@ -310,6 +310,7 @@ abstract class Base implements Bots
         $this->response = new EditMessageText();
         $this->response->message_id = $this->message->message_id;
         $this->response->chat_id = $this->chatId;
+        $this->response->parse_mode = 'Markdown';
 
         return $this;
     }
