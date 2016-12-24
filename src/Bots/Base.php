@@ -62,6 +62,12 @@ abstract class Base implements Bots
     protected $botCommand = '';
 
     /**
+     * Handy shortcut
+     * @var string
+     */
+    protected $commandSubArguments = '';
+
+    /**
      * Arguments passed on to the request. Can contain malicious data, so act with caution!
      * @var array
      */
@@ -374,7 +380,7 @@ abstract class Base implements Bots
                     ],
                 ]);
 
-                $this->subArguments[] = substr($this->message->text, $entity->offset + $entity->length + 1);
+                $this->commandSubArguments = substr($this->message->text, $entity->offset + $entity->length + 1);
             }
         }
 

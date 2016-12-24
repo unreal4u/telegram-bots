@@ -28,6 +28,8 @@ class unreal4uTestBot extends Base {
     public function createAnswer(array $postData=[]): TelegramMethods
     {
         $this->extractBasicInformation($postData);
+        $this->checkMessageForLocationInput();
+
         if ($this->userId !== UNREAL4U_ID) {
             return $this->invalidUser();
         }
@@ -121,6 +123,13 @@ class unreal4uTestBot extends Base {
         return $this->response;
     }
 
+    private function checkMessageForLocationInput(): bool
+    {
+        #if (loction in message)
+
+        return true;
+    }
+
     private function fillFinalResponse(): unreal4uTestBot
     {
         $this->response->text = sprintf(
@@ -135,14 +144,16 @@ class unreal4uTestBot extends Base {
     private function checkRawInput(): TelegramMethods
     {
         // Everything can come in with or without a bot command
-        if (!isset($this->subArguments[0])) {
-            $argument = $this->message->text;
+        if ($this->commandSubArguments !== '') {
+            // Command sub arguments will be filled when we chain a command with
+            $argument = $this->commandSubArguments;
         } else {
             $argument = $this->subArguments[0];
         }
 
         if ($this->isValidTimeZone($argument) === false) {
-            if (!empty($argument)) {
+            if ($this->commandSubArguments === '' || !empty($this->subArguments)) {
+                // Only perform the latitude check
                 try {
                     $this->createEditableMessage();
                     $this->decodeCallbackContents();
