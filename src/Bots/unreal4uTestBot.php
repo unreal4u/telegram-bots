@@ -175,7 +175,7 @@ class unreal4uTestBot extends Base {
     private function decodeCallbackContents(): unreal4uTestBot
     {
         if (!isset($this->subArguments['lt'], $this->subArguments['ln'])) {
-            throw new InvalidCallbackContents('No lt or ln are set in callback');
+            throw new InvalidCallbackContents('No LAT or LON are set in callback');
         }
 
         $this->latitude = $this->subArguments['lt'];
@@ -201,8 +201,7 @@ class unreal4uTestBot extends Base {
             'population',
             GEONAMES_API_USERID
         );
-        // Test chatAction
-        sleep(2);
+        $this->logger->debug('Filled in URL, about to perform search', [$url]);
         $answer = $this->httpClient->get($url);
         return json_decode((string)$answer->getBody(), true);
     }

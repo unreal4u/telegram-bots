@@ -360,7 +360,7 @@ abstract class Base implements Bots
         // The entities will contain information about the sent botCommand, so check that
         foreach ($this->message->entities as $entity) {
             if ($entity->type == 'bot_command') {
-                $this->botCommand = substr($this->message->text, $entity->offset + 1, $entity->length - 1);
+                $this->botCommand = trim(substr($this->message->text, $entity->offset + 1, $entity->length));
                 // Multiple bots in one group can be called with `/start@NameOfTheBot`, so strip the name of the bot
                 if (strpos($this->botCommand, '@') !== false) {
                     $this->botCommand = substr($this->botCommand, 0, strpos($this->botCommand, '@'));
