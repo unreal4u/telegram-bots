@@ -142,7 +142,7 @@ class unreal4uTestBot extends Base {
         }
 
         if ($this->isValidTimeZone($argument) === false) {
-            if (!empty($this->subArguments)) {
+            if (!empty($argument)) {
                 try {
                     $this->createEditableMessage();
                     $this->decodeCallbackContents();
