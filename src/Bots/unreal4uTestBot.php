@@ -165,10 +165,12 @@ class unreal4uTestBot extends Base {
     private function createButton(array $geonamesPlace): Button
     {
         $button = new Button();
-        $button->text =
-            $geonamesPlace['toponymName'].', '.
-            $geonamesPlace['adminName1'].', '.
-            $geonamesPlace['countryName'];
+
+        $button->text = $geonamesPlace['toponymName'].', ';
+        if ($geonamesPlace['fcl'] !== 'A') {
+            $button->text .= $geonamesPlace['adminName1'] . ', ';
+        }
+        $button->text .= $geonamesPlace['countryName'];
 
         $button->callback_data = 'get?lt='.$geonamesPlace['lat'].'&ln='.$geonamesPlace['lng'];
 
@@ -201,7 +203,7 @@ class unreal4uTestBot extends Base {
     private function doGeonamesCityLookup(): array
     {
         $url = sprintf(
-            'http://api.geonames.org/searchJSON?name_startsWith=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&orderby=%s&username=%s',
+            'http://api.geonames.org/searchJSON?name_startsWith=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&orderby=%s&username=%s',
             urlencode($this->message->text),
             6,
             'ADM3',
@@ -212,6 +214,7 @@ class unreal4uTestBot extends Base {
             'PPL',
             'PPLC',
             'PCLI',
+            'PCLIX',
             //'cities1000',
             'population',
             GEONAMES_API_USERID
@@ -244,13 +247,32 @@ class unreal4uTestBot extends Base {
         return $inlineKeyboardMarkup;
     }
 
+    /**
+     * @TODO Will filter out very similar results... such as "pozo almonte" which gives the A and P back
+     *
+     * @param array $geonamesResponse
+     * @return array
+     */
+    private function preRenderResults(array $geonamesResponse): array
+    {
+        /*if ($geonamesResponse['totalResultsCount'] > 1) {
+            foreach ($geonamesResponse['geonames'] as $place) {
+
+            }
+        }*/
+
+        return $geonamesResponse;
+    }
+
     private function performGeonamesSearch(): SendMessage
     {
         $geonamesResponse = $this->doGeonamesCityLookup();
         $this->logger->info('Completed call to GeoNames', [
             'query' => $this->message->text,
-            'totalResults' => $geonamesResponse['totalResultsCount']
+            'APITotalResults' => $geonamesResponse['totalResultsCount']
         ]);
+
+        $geonamesResponse = $this->preRenderResults($geonamesResponse);
 
         if ($geonamesResponse['totalResultsCount'] === 0) {
             $this->response->text = sprintf(
