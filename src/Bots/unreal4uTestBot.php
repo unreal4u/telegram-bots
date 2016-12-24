@@ -155,6 +155,10 @@ class unreal4uTestBot extends Base {
                         'botCommand' => $this->botCommand,
                         'messageText' => $this->message->text,
                     ]);
+
+                    // Send at least an error back to the user
+                    // TODO Solve this in a more elegant way
+                    $this->informAboutEmptyCommand();
                 }
             } else {
                 $this->sendThinkingCommand();
