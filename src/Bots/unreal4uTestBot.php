@@ -11,6 +11,7 @@ use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
 use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
+use unreal4u\TelegramAPI\Telegram\Types\Location;
 use unreal4u\TelegramBots\Exceptions\InvalidCallbackContents;
 use unreal4u\TelegramBots\Exceptions\InvalidTimezoneId;
 
@@ -45,8 +46,10 @@ class unreal4uTestBot extends Base {
                 $this->createSimpleMessageStub();
                 return $this->help();
                 break;
+            case 'get_time_for_latitude':
+                return $this->getTimeForLatitude();
+                break;
             case 'get_time_for_timezone': // The original command
-            case 'get_time_for_latitude': // Alias
             case 'get': // Alias
             case '':
                 $this->logger->debug('Object data is', [
@@ -123,11 +126,15 @@ class unreal4uTestBot extends Base {
         return $this->response;
     }
 
-    private function checkMessageForLocationInput(): bool
+    private function checkMessageForLocationInput(): unreal4uTestBot
     {
-        #if (loction in message)
+        if ($this->message->location instanceof Location) {
+            $this->botCommand = 'get_time_for_latitude';
+            $this->latitude = $this->message->location->latitude;
+            $this->longitude = $this->message->location->longitude;
+        }
 
-        return true;
+        return $this;
     }
 
     private function fillFinalResponse(): unreal4uTestBot
