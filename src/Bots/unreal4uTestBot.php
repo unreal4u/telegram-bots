@@ -247,7 +247,7 @@ class unreal4uTestBot extends Base {
      * @throws InvalidTimezoneId
      * @throws \Exception
      */
-    private function getTimeForLatitude(): SendMessage
+    private function getTimeForLatitude(): TelegramMethods
     {
         $decodedJson = $this->doGeonamesTimezoneIdLookup();
 
