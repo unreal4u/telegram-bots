@@ -201,7 +201,7 @@ class unreal4uTestBot extends Base {
     private function doGeonamesCityLookup(): array
     {
         $url = sprintf(
-            'http://api.geonames.org/searchJSON?q=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&orderby=%s&username=%s',
+            'http://api.geonames.org/searchJSON?name_startsWith=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&orderby=%s&username=%s',
             urlencode($this->message->text),
             6,
             'ADM3',
@@ -263,8 +263,9 @@ class unreal4uTestBot extends Base {
             );
 
             if ($geonamesResponse['totalResultsCount'] > 6) {
-                $this->response->text .= '. There are too many results for your search terms, try to search for more ';
-                $this->response->text .= 'specific places, like appending the name of the country';
+                $this->response->text .= '.'.PHP_EOL.'*NOTE*: There are more than 6 results for your search terms, ';
+                $this->response->text .= 'try to search for more specific places, you can try appending the name of ';
+                $this->response->text .= 'the region or country. Now showing the 6 more relevant results';
             }
             $this->response->reply_markup = $this->createGeonamesInfoButton($geonamesResponse);
         } else {
