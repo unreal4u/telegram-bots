@@ -360,7 +360,7 @@ abstract class Base implements Bots
         // The entities will contain information about the sent botCommand, so check that
         foreach ($this->message->entities as $entity) {
             if ($entity->type == 'bot_command') {
-                $this->botCommand = substr($this->message->text, $entity->offset + 1, $entity->length);
+                $this->botCommand = substr($this->message->text, $entity->offset + 1, $entity->length - 1);
                 // Multiple bots in one group can be called with `/start@NameOfTheBot`, so strip the name of the bot
                 if (strpos($this->botCommand, '@') !== false) {
                     $this->botCommand = substr($this->botCommand, 0, strpos($this->botCommand, '@'));
@@ -381,12 +381,18 @@ abstract class Base implements Bots
         return $this;
     }
 
-    final protected function sendThinkingCommand(): Base
+    /**
+     * Send a "chat action" to the user: we are doing stuff, but it will take a while
+     *
+     * @param string $command
+     * @return Base
+     */
+    final protected function sendThinkingCommand(string $command = 'typing'): Base
     {
         $this->logger->debug('Sending a typing or find_location command to the user');
         $this->response = new SendChatAction();
         $this->response->chat_id = $this->chatId;
-        $this->response->action = 'find_location';
+        $this->response->action = $command;
         $this->sendResponse();
 
         return $this;

@@ -51,6 +51,10 @@ class unreal4uTestBot extends Base {
                     'subArgs' => $this->subArguments,
                     'text' => $this->message->text,
                 ]);
+                if ($this->botCommand === '/'.trim($this->message->text)) {
+                    return $this->informAboutEmptyCommand();
+                }
+
                 return $this->checkRawInput();
                 break;
             default:
@@ -101,6 +105,15 @@ class unreal4uTestBot extends Base {
         $messageText .= '- You can also send a location (Works from phone only)';
 
         $this->response->text .= $messageText;
+        return $this->response;
+    }
+
+    protected function informAboutEmptyCommand(): SendMessage
+    {
+        $this->createSimpleMessageStub();
+        $this->logger->warning('Empty botcommand detected');
+        $this->response->text = 'Sorry but I don\'t understand this option, please check `/help`';
+
         return $this->response;
     }
 
@@ -188,6 +201,8 @@ class unreal4uTestBot extends Base {
             'population',
             GEONAMES_API_USERID
         );
+        // Test chatAction
+        sleep(2);
         $answer = $this->httpClient->get($url);
         return json_decode((string)$answer->getBody(), true);
     }
