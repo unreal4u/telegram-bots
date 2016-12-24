@@ -11,6 +11,7 @@ use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
 use unreal4u\TelegramAPI\Abstracts\TelegramTypes;
 use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
+use unreal4u\TelegramAPI\Telegram\Methods\SendChatAction;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramAPI\Telegram\Types\CallbackQuery;
 use unreal4u\TelegramAPI\Telegram\Types\Custom\ResultNull;
@@ -364,11 +365,29 @@ abstract class Base implements Bots
                 if (strpos($this->botCommand, '@') !== false) {
                     $this->botCommand = substr($this->botCommand, 0, strpos($this->botCommand, '@'));
                 }
-                $this->logger->debug('Found a bot_command within the entities', ['command' => $this->botCommand]);
+                $this->logger->debug('Found a bot_command within the entities', [
+                    'command' => $this->botCommand,
+                    'entity' => [
+                        'offset' => $entity->offset,
+                        'length' => $entity->length,
+                        'url' => $entity->url,
+                    ],
+                ]);
 
                 $this->subArguments[] = substr($this->message->text, $entity->offset + $entity->length + 1);
             }
         }
+
+        return $this;
+    }
+
+    final protected function sendThinkingCommand(): Base
+    {
+        $this->logger->debug('Sending a typing or find_location command to the user');
+        $this->response = new SendChatAction();
+        $this->response->chat_id = $this->chatId;
+        $this->response->action = 'find_location';
+        $this->sendResponse();
 
         return $this;
     }

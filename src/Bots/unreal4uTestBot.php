@@ -93,10 +93,10 @@ class unreal4uTestBot extends Base {
     {
         $this->logger->debug('[CMD] Inside HELP');
         $messageText  = '*Example commands:*'.PHP_EOL;
-        $messageText .= '- `/get America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
-        $messageText .= '- `America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
+        $messageText .= '- `/get America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
+        $messageText .= '- `America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
         $messageText .= '- `Rotterdam` -> Will display a selection for which Rotterdam you actually mean'.PHP_EOL;
-        $messageText .= '- `Eindhoven` -> Will display the time for the timezone Europe/Amsterdam'.PHP_EOL;
+        $messageText .= '- `Eindhoven` -> Will display the time for the timezone *Europe/Amsterdam*'.PHP_EOL;
         //$messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
         $messageText .= '- You can also send a location (Works from phone only)';
 
@@ -131,6 +131,8 @@ class unreal4uTestBot extends Base {
                     ]);
                 }
             } else {
+                $this->sendThinkingCommand();
+
                 // Worst case scenario: we must perform a Geonames search
                 $this->createSimpleMessageStub();
                 $this->performGeonamesSearch();
