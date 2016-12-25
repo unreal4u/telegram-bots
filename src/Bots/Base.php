@@ -175,6 +175,11 @@ abstract class Base implements Bots
             if (in_array($parsedUrl['path'], $this->validSubcommands())) {
                 $this->botCommand = $parsedUrl['path'];
                 parse_str($parsedUrl['query'], $this->subArguments);
+            } else {
+                $this->logger->warning(sprintf(
+                    'Command %s in callbackQuery not within the validSubCommands of bot!',
+                    $parsedUrl['path']
+                ));
             }
         }
         // Once we have the basic values we need to continue, break out of the loop
@@ -364,6 +369,7 @@ abstract class Base implements Bots
     final private function extractBotCommand(): Base
     {
         // The entities will contain information about the sent botCommand, so check that
+        /** @var MessageEntity $entity */
         foreach ($this->message->entities as $entity) {
             if ($entity->type == 'bot_command') {
                 $this->botCommand = trim(substr($this->message->text, $entity->offset + 1, $entity->length));
@@ -399,7 +405,7 @@ abstract class Base implements Bots
      */
     final protected function sendThinkingCommand(string $command = 'typing'): Base
     {
-        $this->logger->debug('Sending a typing or find_location command to the user');
+        $this->logger->debug('Sending a "'.$command.'" chat action to the user');
         $this->response = new SendChatAction();
         $this->response->chat_id = $this->chatId;
         $this->response->action = $command;

@@ -150,11 +150,12 @@ class unreal4uTestBot extends Base {
 
     private function checkRawInput(): TelegramMethods
     {
+        $argument = '';
         // Everything can come in with or without a bot command
         if ($this->commandSubArguments !== '') {
             // Command sub arguments will be filled when we chain a command with
             $argument = $this->commandSubArguments;
-        } else {
+        } elseif (isset($this->subArguments[0])) {
             $argument = $this->subArguments[0];
         }
 
@@ -371,6 +372,11 @@ class unreal4uTestBot extends Base {
      */
     private function isValidTimeZone(string $timezoneCandidate): bool
     {
+        // Quick escape: don't do any processing if we know for a fact no timezone is given
+        if ($timezoneCandidate === '') {
+            return false;
+        }
+
         $return = '';
         // Some timezones have underscores as part of their name... which must be converted to ucwords ¬¬
         $this->timezoneId = str_replace('_', ' ', $timezoneCandidate);

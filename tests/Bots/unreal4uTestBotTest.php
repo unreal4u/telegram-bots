@@ -10,6 +10,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit_Framework_TestCase as TestCase;
+use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
 use unreal4u\TelegramBots\Bots\unreal4uTestBot;
@@ -112,8 +113,40 @@ class unreal4uTestBotTest extends TestCase
 
     public function testDirectCountry()
     {
-        // assert country doesn't include sublvl2
-        $this->assertTrue(true);
+        // Redefine as we must give a custom HTTP wrapper
+        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+            new Response(200, [], file_get_contents($this->baseMock.'typing-accepted.json')),
+            new Response(200, [], file_get_contents($this->baseMock.'geonames/search-countryAR.json')),
+        ]));
+
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'getCountry');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+
+        $this->assertInstanceOf(SendMessage::class, $return);
+        $this->assertStringStartsWith('There was more than 1 result for your query', $return->text);
+        $this->assertCount(6, $return->reply_markup->inline_keyboard);
+        $this->assertSame('Argentine Republic, Argentina', $return->reply_markup->inline_keyboard[0][0]->text);
+        $this->assertSame('Argentina, Chiapas, Mexico', $return->reply_markup->inline_keyboard[5][0]->text);
+    }
+
+    /**
+     * @depends testDirectCountry
+     * @throws \Exception
+     */
+    public function testCountryAfterSelection()
+    {
+        // Redefine as we must give a custom HTTP wrapper
+        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+            new Response(200, [], file_get_contents($this->baseMock.'geonames/timezone-countrySelectionAR.json')),
+        ]));
+
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'countrySelectionAR');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+
+        $this->assertInstanceOf(EditMessageText::class, $return);
+        $this->assertStringStartsWith('The date & time in *America/Argentina/Cordoba*', $return->text);
     }
 
     public function testSendLocation()
