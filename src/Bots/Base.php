@@ -384,6 +384,10 @@ abstract class Base implements Bots
             }
         }
 
+        if ($this->commandSubArguments === '') {
+            $this->commandSubArguments = $this->message->text;
+        }
+
         return $this;
     }
 

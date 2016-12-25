@@ -182,6 +182,7 @@ class unreal4uTestBot extends Base {
                 $this->sendThinkingCommand();
 
                 // Worst case scenario: we must perform a Geonames search
+                $this->createSimpleMessageStub();
                 $this->performGeonamesSearch();
             }
         } else {

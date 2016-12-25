@@ -97,6 +97,7 @@ class unreal4uTestBotTest extends TestCase
     {
         // Redefine as we must give a custom HTTP wrapper
         $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+            new Response(200, [], file_get_contents($this->baseMock.'typing-accepted.json')),
             new Response(200, [], file_get_contents($this->baseMock.'geonames/getOneResult.json')),
             new Response(200, [], file_get_contents($this->baseMock.'geonames/eindhoven-timezone.json')),
         ]));
