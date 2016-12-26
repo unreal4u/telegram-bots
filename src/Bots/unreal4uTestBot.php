@@ -55,6 +55,7 @@ class unreal4uTestBot extends Base {
                 $this->logger->debug('Object data is', [
                     'command' => $this->botCommand,
                     'subArgs' => $this->subArguments,
+                    'commandSubArguments' => $this->commandSubArguments,
                     'text' => $this->message->text,
                 ]);
 
@@ -236,7 +237,7 @@ class unreal4uTestBot extends Base {
     {
         $url = sprintf(
             'http://api.geonames.org/searchJSON?name_startsWith=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&orderby=%s&username=%s',
-            urlencode($this->message->text),
+            urlencode($this->commandSubArguments),
             6,
             'ADM3',
             'PPLA1',

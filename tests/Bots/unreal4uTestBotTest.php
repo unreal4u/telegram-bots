@@ -149,6 +149,25 @@ class unreal4uTestBotTest extends TestCase
         $this->assertStringStartsWith('The date & time in *America/Argentina/Cordoba*', $return->text);
     }
 
+    public function testCommandCitySearch()
+    {
+        // Redefine as we must give a custom HTTP wrapper
+        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+            new Response(200, [], file_get_contents($this->baseMock.'typing-accepted.json')),
+            new Response(200, [], file_get_contents($this->baseMock.'geonames/search-citySantiago.json')),
+        ]));
+
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('get', 'city');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+
+        $this->assertInstanceOf(SendMessage::class, $return);
+        $this->assertStringStartsWith('There was more than 1 result for your query', $return->text);
+        $this->assertCount(6, $return->reply_markup->inline_keyboard);
+        $this->assertSame('Santiago, Santiago Metropolitan, Chile', $return->reply_markup->inline_keyboard[0][0]->text);
+        $this->assertSame('Santiago Ixcuintla, Nayarit, Mexico', $return->reply_markup->inline_keyboard[5][0]->text);
+    }
+
     public function testSendLocation()
     {
         // Redefine as we must give a custom HTTP wrapper
