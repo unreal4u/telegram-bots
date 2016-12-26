@@ -127,7 +127,7 @@ class unreal4uTestBot extends Base {
         return $this->response;
     }
 
-    private function checkMessageForLocationInput(): unreal4uTestBot
+    private function checkMessageForLocationInput(): TheTimeBot
     {
         if ($this->message->location instanceof Location) {
             $this->botCommand = 'get_time_for_latitude';
@@ -138,7 +138,7 @@ class unreal4uTestBot extends Base {
         return $this;
     }
 
-    private function fillFinalResponse(): unreal4uTestBot
+    private function fillFinalResponse(): TheTimeBot
     {
         $this->response->text = sprintf(
             'The date & time in *%s* is now *%s hours*',
@@ -210,7 +210,7 @@ class unreal4uTestBot extends Base {
         return $button;
     }
 
-    private function decodeCallbackContents(): unreal4uTestBot
+    private function decodeCallbackContents(): TheTimeBot
     {
         if (!isset($this->subArguments['lt'], $this->subArguments['ln'])) {
             throw new InvalidCallbackContents('No LAT or LON are set in callback');
@@ -336,7 +336,7 @@ class unreal4uTestBot extends Base {
     /**
      * Get's the time for the already set coordinates
      *
-     * @return SendMessage
+     * @return TelegramMethods
      * @throws InvalidTimezoneId
      * @throws \Exception
      */

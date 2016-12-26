@@ -4,146 +4,409 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\Bots;
 
-use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
-use unreal4u\TelegramAPI\Telegram\Types\Update;
-use unreal4u\TelegramAPI\Telegram\Types\Chat;
-use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use Psr\Http\Message\ResponseInterface;
 use unreal4u\localization;
+use unreal4u\TelegramAPI\Abstracts\TelegramMethods;
+use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
+use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Button;
+use unreal4u\TelegramAPI\Telegram\Types\Inline\Keyboard\Markup;
+use unreal4u\TelegramAPI\Telegram\Types\Location;
+use unreal4u\TelegramBots\Exceptions\InvalidCallbackContents;
+use unreal4u\TelegramBots\Exceptions\InvalidTimezoneId;
 
-class TheTimeBot extends Base
-{
-    protected $command = '';
+class TheTimeBot extends Base {
+    private $latitude = 0.0;
 
-    protected $arguments = '';
+    private $longitude = 0.0;
 
-    protected $update;
+    private $timezoneId = '';
 
+    /**
+     * @param array $postData
+     * @return TelegramMethods
+     */
     public function createAnswer(array $postData=[]): TelegramMethods
     {
-        $update = new Update($postData, $this->logger);
-        $this->logger->debug('Incoming data', $postData);
-        return $this->performAction($update);
-    }
+        $this->extractBasicInformation($postData);
+        $this->checkMessageForLocationInput();
 
-    public function performAction(Update $update): SendMessage
-    {
-        if (empty($update->message->text) && !empty($update->edited_message->text)) {
-            // We'll treat updates the same way as simple messages, maybe in the future edit the original sent msg as well?
-            $update->message = $update->edited_message;
-        }
-
-        if (!empty($update->message->entities)) {
-            $this->command = trim(strtolower(mb_substr(
-                $update->message->text,
-                $update->message->entities[0]->offset + 1,
-                $update->message->entities[0]->length
-            )));
-            $this->arguments = trim(substr($update->message->text, $update->message->entities[0]->length));
-            $this->logger->info(sprintf(
-                'The requested command is "%s". Arguments are "%s". Sent text is: "%s"',
-                $this->command,
-                $this->arguments,
-                $update->message->text
-            ));
-        }
-
-        if (!empty($update->message->location)) {
-            $this->command = 'getTimeByLocation';
-            $this->arguments = $update->message->location;
-        }
-
-        $this->update = $update;
-
-        return $this->prepareUserMessage($this->constructBasicMessage(), $update->message->chat);
-    }
-
-    protected function constructBasicMessage(): string
-    {
-        $messageText = '';
-        switch ($this->command) {
+        // Default: a simple message
+        $this->createSimpleMessageStub();
+        switch ($this->botCommand) {
             case 'start':
-                $messageText = 'Welcome! Consult /help at any time to get a list of command and options.'.PHP_EOL;
+                return $this->start();
+                break;
+            case '/end':
+                return new GetMe();
             case 'help':
-                $messageText .= '*Example commands:*'.PHP_EOL;
-                $messageText .= '- `/get_time_for_timezone America/Santiago` -> Displays the current time in America/Santiago'.PHP_EOL;
-                //$messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
-                $messageText .= '- You can also send a location (Works from phone only)';
+                return $this->help();
                 break;
-            case 'getTimeByLocation':
-                $this->logger->debug(sprintf('Asking Geonames what timezone is lat: %s and lng: %s', $this->arguments->latitude, $this->arguments->longitude));
-                $answer = $this->httpClient->get(sprintf(
-                    'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
-                    $this->arguments->latitude,
-                    $this->arguments->longitude,
-                    'TheTimeBotTelegram'
-                ));
-                $decodedJson = json_decode((string)$answer->getBody());
-                $this->arguments = $decodedJson->timezoneId;
-                $this->logger->info(sprintf('Timezone we must get data from is %s, passing arguments on to get_time_for_timezone', $this->arguments));
-            case 'get_time_for_timezone':
-                if (empty($this->arguments)) {
-                    $this->logger->info('Valid command found but invalid arguments');
-                    $messageText = 'Please provide a valid timezone identifier';
-                } else {
-                    try {
-                        $this->formatTimezone();
-                        $messageText = sprintf('The date & time in *%s* is now *%s hours*', $this->arguments, $this->getTheTime());
-                        $this->logger->warning(sprintf('[OK] "%s" is a valid timezone, sending information back to user', $this->arguments));
-                    } catch (\Exception $e) {
-                        $this->logger->warning('Invalid timezone detected', ['timezone' => $this->arguments]);
-                        $messageText = sprintf(
-                            'Sorry but "*%s*" is not a valid timezone identifier. Please check [the following list](%s) for all possible timezone identifiers',
-                            $this->arguments,
-                            'http://php.net/manual/en/timezones.php'
-                        );
-                    }
+            case 'get_time_for_latitude':
+                return $this->getTimeForLatitude();
+                break;
+            case 'get_time_for_timezone': // The original command
+            case 'get': // Alias
+            case '':
+                $this->logger->debug('Object data is', [
+                    'command' => $this->botCommand,
+                    'subArgs' => $this->subArguments,
+                    'commandSubArguments' => $this->commandSubArguments,
+                    'text' => $this->message->text,
+                ]);
+
+                // Check for an empty command
+                if ('/'.$this->botCommand === trim($this->message->text)) {
+                    return $this->informAboutEmptyCommand();
                 }
-                break;
-            case 'set_display_format':
-                $messageText = 'Sorry but this command is not yet implemented, check later!';
+
+                // We must parse the unsafe data
+                return $this->checkRawInput();
                 break;
             default:
-                $this->logger->warning('Invalid command detected', ['command' => $this->command, 'arguments' => $this->arguments, 'text' => $this->update->message->text]);
-                $messageText = 'Sorry but I don\'t understand this option, please check /help';
+                return new GetMe();
                 break;
         }
-
-        return $messageText;
     }
 
-    protected function prepareUserMessage(string $messageText, Chat $chat): SendMessage
+    protected function invalidUser(): SendMessage
     {
-        $this->logger->debug('Preparing the actual message to be sent to the user', ['text' => $messageText, 'chatId' => $chat->id]);
-        $this->response = new SendMessage();
-        $this->response->chat_id = $chat->id;
-        $this->response->text = $messageText;
-        $this->response->parse_mode = 'Markdown';
+        $this->createSimpleMessageStub();
+        $this->response->text = 'This bot is intended to be used for internal development only';
+        $this->logger->error('Unauthorized access to bot', ['userId' => $this->userId, 'chatId' => $this->chatId]);
 
         return $this->response;
     }
 
-    protected function formatTimezone(): TheTimeBot
+    /**
+     * Action to execute when botCommand is set
+     * @return SendMessage
+     */
+    protected function start(): SendMessage
     {
-        $return = '';
-        $this->arguments = str_replace('_', ' ', $this->arguments);
-        $parts = explode('/', $this->arguments);
-        foreach ($parts as $part) {
-            $return .= ucwords($part) . '/';
+        $this->logger->debug('[CMD] Inside START');
+        $this->response->text = sprintf(
+            _('Welcome! Consult `/help` at any time to get a list of command and options.')
+        );
+
+        // Complete with the text from the help page
+        $this->help();
+
+        return $this->response;
+    }
+
+    /**
+     * Action to execute when botCommand is set
+     * @return SendMessage
+     */
+    protected function help(): SendMessage
+    {
+        $this->logger->debug('[CMD] Inside HELP');
+        $messageText  = '*Example commands:*'.PHP_EOL;
+        $messageText .= '- `/get America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
+        $messageText .= '- `America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
+        $messageText .= '- `Rotterdam` -> Will display a selection for which Rotterdam you actually mean'.PHP_EOL;
+        $messageText .= '- `Eindhoven` -> Will display the time for the timezone *Europe/Amsterdam*'.PHP_EOL;
+        //$messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
+        $messageText .= '- You can also send a location (Works from phone only)';
+
+        $this->response->text .= $messageText;
+        return $this->response;
+    }
+
+    protected function informAboutEmptyCommand(): SendMessage
+    {
+        $this->createSimpleMessageStub();
+        $this->logger->warning('Empty botcommand detected');
+        $this->response->text = 'Sorry but I don\'t understand this option, please check `/help`';
+
+        return $this->response;
+    }
+
+    private function checkMessageForLocationInput(): TheTimeBot
+    {
+        if ($this->message->location instanceof Location) {
+            $this->botCommand = 'get_time_for_latitude';
+            $this->latitude = $this->message->location->latitude;
+            $this->longitude = $this->message->location->longitude;
         }
 
-        $this->arguments = trim(str_replace(' ', '_', $return), '/');
         return $this;
     }
 
-    protected function getTheTime(): string
+    private function fillFinalResponse(): TheTimeBot
     {
-        $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->arguments));
+        $this->response->text = sprintf(
+            'The date & time in *%s* is now *%s hours*',
+            $this->timezoneId,
+            $this->getTheTime()
+        );
+
+        return $this;
+    }
+
+    private function checkRawInput(): TelegramMethods
+    {
+        $argument = '';
+        // Everything can come in with or without a bot command
+        if ($this->commandSubArguments !== '') {
+            // Command sub arguments will be filled when we chain a command with
+            $argument = $this->commandSubArguments;
+        } elseif (isset($this->subArguments[0])) {
+            $argument = $this->subArguments[0];
+        }
+
+        if ($this->isValidTimeZone($argument) === false) {
+            if ($this->commandSubArguments === '' || !empty($this->subArguments)) {
+                // Only perform the latitude check
+                try {
+                    $this->createEditableMessage();
+                    $this->decodeCallbackContents();
+                    $this->getTimeForLatitude();
+                } catch (\Exception $e) {
+                    $this->logger->error('Problem while decoding callback contents', [
+                        'errorMsg' => $e->getMessage(),
+                        'errorCode' => $e->getCode(),
+                        'subArguments' => $this->subArguments,
+                        'botCommand' => $this->botCommand,
+                        'messageText' => $this->message->text,
+                    ]);
+
+                    // Send at least an error back to the user
+                    // TODO Solve this in a more elegant way
+                    $this->informAboutEmptyCommand();
+                }
+            } else {
+                $this->sendThinkingCommand();
+
+                // Worst case scenario: we must perform a Geonames search
+                $this->createSimpleMessageStub();
+                $this->performGeonamesSearch();
+            }
+        } else {
+            // Best case scenario: we have a direct timezoneId
+            $this->fillFinalResponse();
+        }
+
+        return $this->response;
+    }
+
+    private function createButton(array $geonamesPlace): Button
+    {
+        $button = new Button();
+
+        $button->text = $geonamesPlace['toponymName'].', ';
+        if ($geonamesPlace['fcl'] !== 'A') {
+            $button->text .= $geonamesPlace['adminName1'] . ', ';
+        }
+        $button->text .= $geonamesPlace['countryName'];
+
+        $button->callback_data = 'get?lt='.$geonamesPlace['lat'].'&ln='.$geonamesPlace['lng'];
+
+        return $button;
+    }
+
+    private function decodeCallbackContents(): TheTimeBot
+    {
+        if (!isset($this->subArguments['lt'], $this->subArguments['ln'])) {
+            throw new InvalidCallbackContents('No LAT or LON are set in callback');
+        }
+
+        $this->latitude = $this->subArguments['lt'];
+        $this->longitude = $this->subArguments['ln'];
+
+        return $this;
+    }
+
+    private function performAPIRequest(string $url, string $type): ResponseInterface
+    {
+        $this->logger->debug('About to perform '.$type.' search', [$url]);
+        $beginTime = microtime(true);
+        $answer = $this->httpClient->get($url);
+        $endTime = microtime(true);
+        $this->logger->debug('Finished performing request', ['totalTime' => $endTime - $beginTime]);
+
+        return $answer;
+    }
+
+    private function doGeonamesCityLookup(): array
+    {
+        $url = sprintf(
+            'http://api.geonames.org/searchJSON?name_startsWith=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&orderby=%s&username=%s',
+            urlencode($this->commandSubArguments),
+            6,
+            'ADM3',
+            'PPLA1',
+            'PPLA2',
+            'PPLA3',
+            'PPLA4',
+            'PPL',
+            'PPLC',
+            'PCLI',
+            'PCLIX',
+            //'cities1000',
+            'population',
+            GEONAMES_API_USERID
+        );
+        $answer = $this->performAPIRequest($url, 'city');
+        return json_decode((string)$answer->getBody(), true);
+    }
+
+    private function doGeonamesTimezoneIdLookup(): \stdClass
+    {
+        $url = sprintf(
+            'http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s',
+            $this->latitude,
+            $this->longitude,
+            GEONAMES_API_USERID
+        );
+        $answer = $this->performAPIRequest($url, 'timezone');
+
+        return json_decode((string)$answer->getBody());
+    }
+
+    private function createGeonamesInfoButton(array $geonamesPlaces): Markup
+    {
+        $inlineKeyboardMarkup = new Markup();
+
+        foreach ($geonamesPlaces['geonames'] as $geoNamesPlace) {
+            $inlineKeyboardMarkup->inline_keyboard[] = [$this->createButton($geoNamesPlace)];
+        }
+
+        return $inlineKeyboardMarkup;
+    }
+
+    /**
+     * @TODO Will filter out very similar results... such as "pozo almonte" which gives the A and P back
+     *
+     * @param array $geonamesResponse
+     * @return array
+     */
+    private function preRenderResults(array $geonamesResponse): array
+    {
+        /*if ($geonamesResponse['totalResultsCount'] > 1) {
+            foreach ($geonamesResponse['geonames'] as $place) {
+
+            }
+        }*/
+
+        return $geonamesResponse;
+    }
+
+    private function performGeonamesSearch(): SendMessage
+    {
+        $geonamesResponse = $this->doGeonamesCityLookup();
+        $this->logger->info('Completed call to GeoNames', [
+            'query' => $this->message->text,
+            'APITotalResults' => $geonamesResponse['totalResultsCount']
+        ]);
+
+        $geonamesResponse = $this->preRenderResults($geonamesResponse);
+
+        if ($geonamesResponse['totalResultsCount'] === 0) {
+            $this->response->text = sprintf(
+                'No populated places called *%s* have been found. Maybe try another search?',
+                $this->message->text
+            );
+        } elseif ($geonamesResponse['totalResultsCount'] > 1) {
+            $this->response->text = sprintf(
+                'There was more than 1 result for your query, please select the most appropiate one from the list below'
+            );
+
+            if ($geonamesResponse['totalResultsCount'] > 6) {
+                $this->response->text .= '.'.PHP_EOL.'*NOTE*: There are more than 6 results for your search terms, ';
+                $this->response->text .= 'try to search for more specific places, you can try appending the name of ';
+                $this->response->text .= 'the region or country. Now showing the 6 more relevant results';
+            }
+            $this->response->reply_markup = $this->createGeonamesInfoButton($geonamesResponse);
+        } else {
+            $this->latitude = $geonamesResponse['geonames'][0]['lat'];
+            $this->longitude = $geonamesResponse['geonames'][0]['lng'];
+            // Once we have the latitude, we can perform another geonames lookup to get the timezoneId
+            $this->getTimeForLatitude();
+        }
+
+        return $this->response;
+    }
+
+    /**
+     * Get's the time for the already set coordinates
+     *
+     * @return TelegramMethods
+     * @throws InvalidTimezoneId
+     * @throws \Exception
+     */
+    private function getTimeForLatitude(): TelegramMethods
+    {
+        $decodedJson = $this->doGeonamesTimezoneIdLookup();
+
+        if ($this->isValidTimeZone($decodedJson->timezoneId)) {
+            $this->logger->info('Completed call to GeoNames', [
+                'lat' => $this->latitude,
+                'lon' => $this->longitude,
+                'timezoneId' => $decodedJson->timezoneId,
+            ]);
+
+            $this->fillFinalResponse();
+        } else {
+            $this->logger->error('Invalid timezoneId returned from Geonames', [
+                'lat' => $this->latitude,
+                'lon' => $this->longitude,
+                'timezoneId' => $decodedJson->timezoneId,
+            ]);
+
+            throw new InvalidTimezoneId(sprintf('The given timezone ("%s") is not valid', $decodedJson->timezoneId));
+        }
+
+        return $this->response;
+    }
+
+    /**
+     * Validates a timezoneId
+     *
+     * @param string $timezoneCandidate
+     * @return bool
+     */
+    private function isValidTimeZone(string $timezoneCandidate): bool
+    {
+        // Quick escape: don't do any processing if we know for a fact no timezone is given
+        if ($timezoneCandidate === '') {
+            return false;
+        }
+
+        $return = '';
+        // Some timezones have underscores as part of their name... which must be converted to ucwords ¬¬
+        $this->timezoneId = str_replace('_', ' ', $timezoneCandidate);
+        $parts = explode('/', $this->timezoneId);
+        foreach ($parts as $part) {
+            // Convert all first letter of each word to uppercase
+            $return .= ucwords($part) . '/';
+        }
+
+        // Convert all spaces back to underscores... ¬¬
+        $this->timezoneId = trim(str_replace(' ', '_', $return), '/');
 
         $localization = new localization();
-        $acceptedTimezone = $localization->setTimezone($this->arguments);
+        if ($localization->isValidTimeZone($this->timezoneId)) {
+            return true;
+        } else {
+            $this->timezoneId = '';
+            return false;
+        }
+    }
 
-        if ($acceptedTimezone === $this->arguments) {
-            $theTime = $localization->formatSimpleDate(0, $acceptedTimezone).' '.$localization->formatSimpleTime(0, $acceptedTimezone);
+    private function getTheTime(): string
+    {
+        $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->timezoneId));
+
+        $localization = new localization();
+        $acceptedTimezone = $localization->setTimezone($this->timezoneId);
+
+        if ($acceptedTimezone === $this->timezoneId) {
+            $theTime =
+                $localization->formatSimpleDate(0, $acceptedTimezone).
+                ' '.
+                $localization->formatSimpleTime(0, $acceptedTimezone);
             $theTime .= '; Offset: '.$localization->getTimezoneOffset('hours');
         } else {
             throw new \Exception('Invalid timezone, please try again');
@@ -152,14 +415,18 @@ class TheTimeBot extends Base
         return $theTime;
     }
 
+    /**
+     * Returns an array with valid subcommands for the bot
+     * @return array
+     */
     public function validSubcommands(): array
     {
         return [
             'start',
-            'help',
-            'getTimeByLocation',
+            'get',
             'get_time_for_timezone',
-            'set_display_format',
+            'get_time_for_latitude',
+            'help',
         ];
     }
 }

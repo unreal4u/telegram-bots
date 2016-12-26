@@ -4,7 +4,6 @@ declare(strict_types = 1);
 
 namespace unreal4u\TelegramBots\tests\Bots;
 
-use Doctrine\ORM\EntityManager;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -13,13 +12,12 @@ use PHPUnit_Framework_TestCase as TestCase;
 use unreal4u\TelegramAPI\Telegram\Methods\EditMessageText;
 use unreal4u\TelegramAPI\Telegram\Methods\GetMe;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
-use unreal4u\TelegramBots\Bots\unreal4uTestBot;
+use unreal4u\TelegramBots\Bots\TheTimeBot;
 use unreal4u\TelegramBots\Tests\bootstrap;
 
-define('UNREAL4U_ID', 12345678);
 define('GEONAMES_API_USERID', 'testuser');
 
-class unreal4uTestBotTest extends TestCase
+class TheTimeBotTest extends TestCase
 {
     /**
      * @var bootstrap
@@ -27,19 +25,14 @@ class unreal4uTestBotTest extends TestCase
     private $bootstrap;
 
     /**
-     * @var EntityManager
-     */
-    private $db;
-
-    /**
-     * @var unreal4uTestBot
+     * @var TheTimeBot
      */
     private $wrapper;
 
     /**
      * @var string
      */
-    private $baseMock = 'tests/commandEmulator/Bots/unreal4uTestBot/';
+    private $baseMock = 'tests/commandEmulator/Bots/TheTimeBot/';
 
     protected function setUp()
     {
@@ -48,10 +41,10 @@ class unreal4uTestBotTest extends TestCase
         $this->bootstrap = new bootstrap();
         $this->bootstrap
             ->setUpLogger()
-            ->forceConfigurationSet('unreal4uTestBot')
+            ->forceConfigurationSet('TheTimeBot')
         ;
 
-        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456');
+        $this->wrapper = new TheTimeBot($this->bootstrap->getLogger(), '123456');
     }
 
     /**
@@ -97,7 +90,7 @@ class unreal4uTestBotTest extends TestCase
     public function testDirectCityOneResult()
     {
         // Redefine as we must give a custom HTTP wrapper
-        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+        $this->wrapper = new TheTimeBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
             new Response(200, [], file_get_contents($this->baseMock.'typing-accepted.json')),
             new Response(200, [], file_get_contents($this->baseMock.'geonames/getOneResult.json')),
             new Response(200, [], file_get_contents($this->baseMock.'geonames/eindhoven-timezone.json')),
@@ -114,7 +107,7 @@ class unreal4uTestBotTest extends TestCase
     public function testDirectCountry()
     {
         // Redefine as we must give a custom HTTP wrapper
-        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+        $this->wrapper = new TheTimeBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
             new Response(200, [], file_get_contents($this->baseMock.'typing-accepted.json')),
             new Response(200, [], file_get_contents($this->baseMock.'geonames/search-countryAR.json')),
         ]));
@@ -137,7 +130,7 @@ class unreal4uTestBotTest extends TestCase
     public function testCountryAfterSelection()
     {
         // Redefine as we must give a custom HTTP wrapper
-        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+        $this->wrapper = new TheTimeBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
             new Response(200, [], file_get_contents($this->baseMock.'geonames/timezone-countrySelectionAR.json')),
         ]));
 
@@ -152,7 +145,7 @@ class unreal4uTestBotTest extends TestCase
     public function testCommandCitySearch()
     {
         // Redefine as we must give a custom HTTP wrapper
-        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+        $this->wrapper = new TheTimeBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
             new Response(200, [], file_get_contents($this->baseMock.'typing-accepted.json')),
             new Response(200, [], file_get_contents($this->baseMock.'geonames/search-citySantiago.json')),
         ]));
@@ -171,7 +164,7 @@ class unreal4uTestBotTest extends TestCase
     public function testSendLocation()
     {
         // Redefine as we must give a custom HTTP wrapper
-        $this->wrapper = new unreal4uTestBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+        $this->wrapper = new TheTimeBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
             new Response(200, [], file_get_contents($this->baseMock.'geonames/getCustomLocation.json')),
         ]));
 
