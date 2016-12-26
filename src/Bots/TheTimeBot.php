@@ -106,7 +106,7 @@ class TheTimeBot extends Base {
         $messageText .= '- `/get America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
         $messageText .= '- `America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
         $messageText .= '- `Rotterdam` -> Will display a selection for which Rotterdam you actually mean'.PHP_EOL;
-        $messageText .= '- `Eindhoven` -> Will display the time for the timezone *Europe/Amsterdam*'.PHP_EOL;
+        $messageText .= '- `Republic of Mozambique` -> Will display the time for the timezone *Africa/Maputo*'.PHP_EOL;
         //$messageText .= '`/set_display_format en-US` -> Sets the display format, use a valid locale'.PHP_EOL;
         $messageText .= '- You can also send a location (Works from phone only)';
 
@@ -136,8 +136,9 @@ class TheTimeBot extends Base {
 
     private function fillFinalResponse(): TheTimeBot
     {
+        // TODO: Change this to "It is now [currentTime] in [timezone]. Offset: X hour(s)
         $this->response->text = sprintf(
-            'The date & time in *%s* is now *%s hours*',
+            'The date & time in *%s* is now *%s hour(s)*',
             $this->timezoneId,
             $this->getTheTime()
         );
@@ -206,6 +207,12 @@ class TheTimeBot extends Base {
         return $button;
     }
 
+    /**
+     * Decodes a callbackQuery
+     *
+     * @return TheTimeBot
+     * @throws InvalidCallbackContents
+     */
     private function decodeCallbackContents(): TheTimeBot
     {
         if (!isset($this->subArguments['lt'], $this->subArguments['ln'])) {
@@ -218,6 +225,13 @@ class TheTimeBot extends Base {
         return $this;
     }
 
+    /**
+     * Does the actual call to the Geonames API and records how long it took to perform the call
+     *
+     * @param string $url
+     * @param string $type
+     * @return ResponseInterface
+     */
     private function performAPIRequest(string $url, string $type): ResponseInterface
     {
         $this->logger->debug('About to perform '.$type.' search', [$url]);
@@ -229,6 +243,11 @@ class TheTimeBot extends Base {
         return $answer;
     }
 
+    /**
+     * Performs a general search lookup to the Geonames API
+     *
+     * @return array
+     */
     private function doGeonamesCityLookup(): array
     {
         $url = sprintf(
@@ -252,6 +271,11 @@ class TheTimeBot extends Base {
         return json_decode((string)$answer->getBody(), true);
     }
 
+    /**
+     * Performs the timezone lookup based on coordinates to the Geonames API
+     *
+     * @return \stdClass
+     */
     private function doGeonamesTimezoneIdLookup(): \stdClass
     {
         $url = sprintf(
@@ -265,6 +289,12 @@ class TheTimeBot extends Base {
         return json_decode((string)$answer->getBody());
     }
 
+    /**
+     * Creates an inline keyboard button with the given input
+     *
+     * @param array $geonamesPlaces
+     * @return Markup
+     */
     private function createGeonamesInfoButton(array $geonamesPlaces): Markup
     {
         $inlineKeyboardMarkup = new Markup();
@@ -278,6 +308,8 @@ class TheTimeBot extends Base {
 
     /**
      * @TODO Will filter out very similar results... such as "pozo almonte" which gives the A and P back
+     * Maybe do this based on timezone information? This can however only be done if we import the whole of Geonames
+     * data in our own database
      *
      * @param array $geonamesResponse
      * @return array
@@ -293,6 +325,12 @@ class TheTimeBot extends Base {
         return $geonamesResponse;
     }
 
+    /**
+     * Handles off a search in the Geonames API
+     *
+     * @return SendMessage
+     * @throws InvalidTimezoneId
+     */
     private function performGeonamesSearch(): SendMessage
     {
         $geonamesResponse = $this->doGeonamesCityLookup();
@@ -314,9 +352,11 @@ class TheTimeBot extends Base {
             );
 
             if ($geonamesResponse['totalResultsCount'] > 6) {
-                $this->response->text .= '.'.PHP_EOL.'*NOTE*: There are more than 6 results for your search terms, ';
-                $this->response->text .= 'try to search for more specific places, you can try appending the name of ';
-                $this->response->text .= 'the region or country. Now showing the 6 more relevant results';
+                $this->response->text .= '.'.PHP_EOL.'*NOTE*: There are a total of ';
+                $this->response->text .= $geonamesResponse['totalResultsCount'].' results for your search term(s), ';
+                $this->response->text .= 'showing the first 6 most relevant places. This search *will improve* ';
+                $this->response->text .= 'in the future. If you don\'t see what you\'re looking for, try a timezoneId ';
+                $this->response->text .= 'search, which is faster and more accurate.';
             }
             $this->response->reply_markup = $this->createGeonamesInfoButton($geonamesResponse);
         } else {
@@ -395,6 +435,12 @@ class TheTimeBot extends Base {
         }
     }
 
+    /**
+     * Calculates what time it is in the set timezoneId
+     *
+     * @return string
+     * @throws \Exception
+     */
     private function getTheTime(): string
     {
         $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->timezoneId));
