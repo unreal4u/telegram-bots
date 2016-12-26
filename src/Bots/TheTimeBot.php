@@ -252,7 +252,7 @@ class TheTimeBot extends Base {
      *
      * @return array
      */
-    private function doGeonamesCityLookup(): array
+    private function doGeonamesSearchLookup(): array
     {
         $url = sprintf(
             'http://api.geonames.org/searchJSON?name_startsWith=%s&maxRows=%d&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&featureCode=%s&orderby=%s&username=%s',
@@ -271,7 +271,7 @@ class TheTimeBot extends Base {
             'population',
             GEONAMES_API_USERID
         );
-        $answer = $this->performAPIRequest($url, 'city');
+        $answer = $this->performAPIRequest($url, 'search');
         return json_decode((string)$answer->getBody(), true);
     }
 
@@ -337,7 +337,7 @@ class TheTimeBot extends Base {
      */
     private function performGeonamesSearch(): SendMessage
     {
-        $geonamesResponse = $this->doGeonamesCityLookup();
+        $geonamesResponse = $this->doGeonamesSearchLookup();
         $this->logger->info('Completed call to GeoNames', [
             'query' => $this->message->text,
             'APITotalResults' => $geonamesResponse['totalResultsCount']
