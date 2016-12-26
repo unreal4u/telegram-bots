@@ -79,10 +79,9 @@ class TheTimeBotTest extends TestCase
     }
 
     /**
-     * @group InvalidBotCommand
      * @throws \Exception
      */
-    public function testBotCommand()
+    public function testInvalidBotCommand()
     {
         $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'invalidBotCommand');
         /** @var SendMessage $return */
