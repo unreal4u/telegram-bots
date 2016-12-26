@@ -241,7 +241,8 @@ class TheTimeBot extends Base {
         $endTime = microtime(true);
         $this->logger->warning('[OK] Finished performing Geonames API request', [
             'type' => $type,
-            'totalTime' => $endTime - $beginTime
+            'totalTime' => $endTime - $beginTime,
+            'originalCommandSubArguments' => $this->commandSubArguments,
         ]);
 
         return $answer;
