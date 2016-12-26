@@ -142,6 +142,7 @@ class TheTimeBot extends Base {
             $this->timezoneId,
             $this->getTheTime()
         );
+        $this->logger->warning('[OK] Filling final response', ['timezone' => $this->timezoneId]);
 
         return $this;
     }
@@ -238,7 +239,10 @@ class TheTimeBot extends Base {
         $beginTime = microtime(true);
         $answer = $this->httpClient->get($url);
         $endTime = microtime(true);
-        $this->logger->debug('Finished performing request', ['totalTime' => $endTime - $beginTime]);
+        $this->logger->warning('[OK] Finished performing request', [
+            'type' => $type,
+            'totalTime' => $endTime - $beginTime
+        ]);
 
         return $answer;
     }
