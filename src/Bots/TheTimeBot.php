@@ -350,7 +350,7 @@ class TheTimeBot extends Base {
         if ($geonamesResponse['totalResultsCount'] === 0) {
             $this->response->text = sprintf(
                 'No populated places called *%s* have been found. Maybe try another search?',
-                $this->message->text
+                $this->commandSubArguments
             );
         } elseif ($geonamesResponse['totalResultsCount'] > 1) {
             $this->response->text = sprintf(
