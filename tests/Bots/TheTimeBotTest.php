@@ -69,6 +69,19 @@ class TheTimeBotTest extends TestCase
         $this->assertNotEmpty($return->chat_id);
     }
 
+    public function testDeleteBotFromGroup()
+    {
+        $this->wrapper = new TheTimeBot($this->bootstrap->getLogger(), '123456', $this->getClientMockGetMe([
+            new Response(200, [], file_get_contents($this->baseMock.'getme.json')),
+        ]));
+
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'deleteBotFromGroup');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+
+        $this->assertInstanceOf(GetMe::class, $return);
+    }
+
     public function testInvalidCommand()
     {
         $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'invalid-command');

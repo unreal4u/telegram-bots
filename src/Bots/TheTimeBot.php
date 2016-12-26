@@ -38,7 +38,8 @@ class TheTimeBot extends Base {
                 return $this->start();
                 break;
             case '/end':
-                return new GetMe();
+                $this->response = new GetMe();
+                return $this->response;
             case 'help':
                 return $this->help();
                 break;
