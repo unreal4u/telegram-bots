@@ -74,7 +74,21 @@ class TheTimeBotTest extends TestCase
         $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'invalid-command');
         /** @var SendMessage $return */
         $return = $this->wrapper->createAnswer($simulatedPost);
-        $this->assertInstanceOf(GetMe::class, $return);
+        $this->assertInstanceOf(SendMessage::class, $return);
+        $this->assertContains('Sorry but I don\'t understand this option', $return->text);
+    }
+
+    /**
+     * @group InvalidBotCommand
+     * @throws \Exception
+     */
+    public function testBotCommand()
+    {
+        $simulatedPost = $this->bootstrap->getSimulatedPostData('update', 'invalidBotCommand');
+        /** @var SendMessage $return */
+        $return = $this->wrapper->createAnswer($simulatedPost);
+        $this->assertInstanceOf(SendMessage::class, $return);
+        $this->assertContains('Sorry but I don\'t understand this option', $return->text);
     }
 
     public function testSendDirectTimezone()

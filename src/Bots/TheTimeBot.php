@@ -64,7 +64,7 @@ class TheTimeBot extends Base {
                 return $this->checkRawInput();
                 break;
             default:
-                return new GetMe();
+                return $this->informAboutEmptyCommand();
                 break;
         }
     }
