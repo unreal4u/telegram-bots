@@ -17,7 +17,7 @@ class unreal4uTestBot extends Base {
     {
         $this->extractBasicInformation($postData);
 
-        if ($this->userId !== UNREAL4U_ID) {
+        if ($this->userId !== DEVELOPER_ID) {
             return $this->invalidUser();
         }
 

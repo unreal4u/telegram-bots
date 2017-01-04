@@ -9,3 +9,5 @@ define('BOT_TOKENS', [
 define('ENVIRONMENT', 'production');
 define('MONOLOG_BOT', '123123123:asdasdasdas-asdasdasdasdasdadasd_gg');
 define('MONOLOG_CHATID', 12345678);
+define('DEVELOPER_ID', 12341234);
+define('GEONAMES_API_USERID', 'blablablabla');
