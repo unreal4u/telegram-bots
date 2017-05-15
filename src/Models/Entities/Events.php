@@ -242,6 +242,10 @@ class Events extends Base
      */
     public function getEventTime(): \DateTimeImmutable
     {
+        if ($this->eventTime instanceof \DateTime) {
+            return \DateTimeImmutable::createFromMutable($this->eventTime);
+        }
+
         return $this->eventTime;
     }
 
