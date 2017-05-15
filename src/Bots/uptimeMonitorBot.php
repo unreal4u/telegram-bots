@@ -227,9 +227,19 @@ class UptimeMonitorBot extends Base {
                 $previousEvent->getTelegramMessageId()
             ]);
             $this->response->reply_to_message_id = $previousEvent->getTelegramMessageId();
-            $interval = time() - $previousEvent->getEventTime()->getTimestamp();
-            $numberFormatter = new \NumberFormatter('en-US', \NumberFormatter::DURATION);
-            $downDuration = 'Site was down for '.$numberFormatter->format($interval);
+
+            // Calculate human friendly time display
+            $interval = $previousEvent->getEventTime()->diff(new \DateTime());
+            $downDuration = 'Site was down for ';
+            $days = (int)$interval->format('%a');
+            $hours = (int)$interval->format('%H');
+            if ($days > 0) {
+                $downDuration .= $days.' days, ';
+            }
+            if ($hours > 0) {
+                $downDuration .= $hours.' hours, ';
+            }
+            $downDuration .= $interval->format('%I minutes and %S seconds');
         }
 
         return sprintf(
