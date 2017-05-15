@@ -228,7 +228,8 @@ class UptimeMonitorBot extends Base {
             ]);
             $this->response->reply_to_message_id = $previousEvent->getTelegramMessageId();
             $interval = time() - $previousEvent->getEventTime()->getTimestamp();
-            $downDuration = 'Site was down for '.\NumberFormatter::format($interval, \NumberFormatter::DURATION);
+            $numberFormatter = new \NumberFormatter('en-US', \NumberFormatter::DURATION);
+            $downDuration = 'Site was down for '.$numberFormatter->format($interval);
         }
 
         return sprintf(
