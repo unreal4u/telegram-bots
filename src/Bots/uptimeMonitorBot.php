@@ -219,6 +219,8 @@ class UptimeMonitorBot extends Base {
                 'monitorId' => $this->monitor->getId(),
                 'urMonitorId' => $event->getUrMonitorId(),
                 'alertType' => 1,
+            ], [
+                'eventTime' => 'DESC',
             ]);
 
         $downDuration = '';
