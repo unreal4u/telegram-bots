@@ -170,7 +170,7 @@ class UptimeMonitorBot extends Base {
             // No sense in trying to show webpage if it is down
             $this->response->disable_web_page_preview = true;
             // Allow basic decoration of text through markdown engine
-            $this->response->parse_mode = 'Markdown';
+            $this->response->parse_mode = 'HTML';
             if ($event->getAlertType() === 1) {
                 $this->response->text = $this->messageSiteIsDown($event);
             } else {
@@ -191,7 +191,7 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->info('Generating DOWN message');
         return sprintf(
-            '%s Attention! Site [%s](%s) is currently *down*!%sAlert details: *%s*%sDate of incident: *%s UTC*%s',
+            '%s Attention! Site [%s](%s) is currently <b>down</b>!%sAlert details: <b>%s</b>%sDate of incident: <b>%s UTC</b>%s',
             "\xF0\x9F\x94\xB4",
             $event->getUrMonitorUrl(),
             $event->getUrMonitorUrl(),
@@ -231,7 +231,7 @@ class UptimeMonitorBot extends Base {
         return sprintf(
             '%s %s is back up again, happy surfing!',
             "\xF0\x9F\x94\xB5",
-            $event->getUrMonitorUrl()
+            htmlentities($event->getUrMonitorUrl())
         );
     }
 

@@ -2,4 +2,5 @@
 /conf.php
 /.vagrant/
 /.idea/
+.DS_Store
 /config/config.production.yml
