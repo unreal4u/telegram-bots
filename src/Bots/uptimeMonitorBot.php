@@ -191,10 +191,10 @@ class UptimeMonitorBot extends Base {
     {
         $this->logger->info('Generating DOWN message');
         return sprintf(
-            '%s Attention! Site [%s](%s) is currently <b>down</b>!%sAlert details: <b>%s</b>%sDate of incident: <b>%s UTC</b>%s',
+            '%s Attention! Site <a href="%s">%s</a> is currently <b>down</b>!%sAlert details: <b>%s</b>%sDate of incident: <b>%s UTC</b>%s',
             "\xF0\x9F\x94\xB4",
-            $event->getUrMonitorUrl(),
-            $event->getUrMonitorUrl(),
+            htmlentities($event->getUrMonitorUrl()),
+            htmlentities($event->getUrMonitorUrl()),
             PHP_EOL,
             $event->getUrAlertDetails(),
             PHP_EOL,
@@ -221,17 +221,22 @@ class UptimeMonitorBot extends Base {
                 'alertType' => 1,
             ]);
 
-        if (!empty($previousEvent)) {
+        $downDuration = '';
+        if ($previousEvent !== null) {
             $this->logger->debug('Found a previous messageId to reply to, setting it', [
                 $previousEvent->getTelegramMessageId()
             ]);
             $this->response->reply_to_message_id = $previousEvent->getTelegramMessageId();
+            $interval = time() - $previousEvent->getEventTime()->getTimestamp();
+            $downDuration = 'Site was down for '.\NumberFormatter::format($interval, \NumberFormatter::DURATION);
         }
 
         return sprintf(
-            '%s %s is back up again, happy surfing!',
+            '%s Site <a href="%s">%s</a> is back up, happy surfing! %s',
             "\xF0\x9F\x94\xB5",
-            htmlentities($event->getUrMonitorUrl())
+            htmlentities($event->getUrMonitorUrl()),
+            htmlentities($event->getUrMonitorUrl()),
+            $downDuration
         );
     }
 
