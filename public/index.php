@@ -19,5 +19,18 @@ $logger->pushHandler($streamHandler);
 $logger->pushHandler($monologTgLogger);
 
 $trimmedRequestUri = trim($_SERVER['DOCUMENT_URI'], '/');
+/*
+ * Some users send a malformed URI string to our bot, fix this one manually. Should it give more problems, invent
+ * something else to fix it properly
+ */
+if (strlen($trimmedRequestUri) > 53) {
+    $pos = strpos($trimmedRequestUri, '&');
+    if ($pos !== false) {
+        $fixedRequest = substr_replace($trimmedRequestUri, '?', $pos, strlen('&'));
+        $trimmedRequestUri = substr($fixedRequest, 0 , $pos);
+        $fixedRequest = substr($fixedRequest, $pos + 1);
+        parse_str($fixedRequest, $_GET);
+    }
+}
 
 new RequestHandler($logger, $trimmedRequestUri, $httpClient);

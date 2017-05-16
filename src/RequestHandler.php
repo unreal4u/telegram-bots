@@ -95,7 +95,7 @@ class RequestHandler {
         if (!empty($requestUriParts[0])) {
             $this->logger->info('Incoming request for bot', [
                 'bot' => $requestUriParts[0],
-                'uuid' => $requestUriParts[1]
+                'uuid' => $requestUriParts[1],
             ]);
 
             if (strtolower($requestUriParts[0]) === 'uptimemonitorbot') {
