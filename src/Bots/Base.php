@@ -197,7 +197,10 @@ abstract class Base implements Bots
         $this->message = $telegramType;
         $this->entities = $telegramType->entities;
         $this->chatId = $telegramType->chat->id;
-        $this->userId = $telegramType->from->id;
+        // In a channel, we don't have a from field, so user isn't set
+        if (is_object($telegramType->from)) {
+            $this->userId = $telegramType->from->id;
+        }
         // We are now ready to get to know what the actual sent command was
         $this->extractBotCommand();
 

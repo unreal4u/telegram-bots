@@ -42,7 +42,7 @@ class Monitors
 
     /**
      * @var int
-     * @Column(type="bigint")
+     * @Column(type="bigint", nullable=true)
      */
     protected $userId;
 
