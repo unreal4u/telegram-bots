@@ -87,7 +87,7 @@ class Events extends Base
      * The message id of the previous message (to be able to reply to it)
      *
      * @var int
-     * @Column(type="integer")
+     * @Column(type="bigint")
      */
     protected $telegramMessageId = 0;
 

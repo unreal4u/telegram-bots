@@ -36,13 +36,13 @@ class Monitors
 
     /**
      * @var int
-     * @Column(type="integer")
+     * @Column(type="bigint")
      */
     protected $chatId;
 
     /**
      * @var int
-     * @Column(type="integer")
+     * @Column(type="bigint")
      */
     protected $userId;
 
