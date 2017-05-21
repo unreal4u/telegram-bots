@@ -141,7 +141,7 @@ class Monitors
      */
     public function getChatId(): int
     {
-        return $this->chatId;
+        return (int)$this->chatId;
     }
 
     /**
@@ -149,7 +149,7 @@ class Monitors
      */
     public function getUserId(): int
     {
-        return $this->userId;
+        return (int)$this->userId;
     }
 
     /**

@@ -71,9 +71,10 @@ class RequestHandler {
             $bot = new $completeName($this->botLogger, $botToken, $this->httpClient);
             $this->botLogger->debug('Incoming data', [$_POST]);
             $bot->createAnswer($_POST);
-            $this->botLogger->debug('Created an answer');
+            $this->botLogger->debug('Went through the createAnswer method, sending possible response (If there is any)');
             // Assume this went well
             $bot->sendResponse();
+            $this->botLogger->debug(str_repeat('-', 20).' Finishing request '.str_repeat('-', 20));
         } catch (\Exception $e) {
             // Log in the specific bot logger instead of general log
             $this->botLogger->error(sprintf('Captured exception: "%s" for bot %s', $e->getMessage(), $currentBot));

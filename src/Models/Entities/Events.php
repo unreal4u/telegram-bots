@@ -326,6 +326,6 @@ class Events extends Base
      */
     public function getTelegramMessageId(): int
     {
-        return $this->telegramMessageId;
+        return (int)$this->telegramMessageId;
     }
 }
