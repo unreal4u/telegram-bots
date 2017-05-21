@@ -118,7 +118,7 @@ class TheTimeBot extends Base {
     protected function informAboutEmptyCommand(): SendMessage
     {
         $this->createSimpleMessageStub();
-        $this->logger->warning('Empty botcommand detected');
+        $this->logger->info('Empty botcommand detected');
         $this->response->text = 'Sorry but I don\'t understand this option, please check `/help`';
 
         return $this->response;
@@ -139,9 +139,9 @@ class TheTimeBot extends Base {
     {
         // TODO: Change this to "It is now [currentTime] in [timezone]. Offset: X hour(s)
         $this->response->text = sprintf(
-            'The date & time in *%s* is now *%s hour(s)*',
-            $this->timezoneId,
-            $this->getTheTime()
+            'It is now *%s hour(s)* in *%s* (which is the timezone corresponding to your selection)',
+            $this->getTheTime(),
+            $this->timezoneId
         );
         $this->logger->warning('[OK] Filling final response', ['timezone' => $this->timezoneId]);
 
@@ -240,7 +240,7 @@ class TheTimeBot extends Base {
         $beginTime = microtime(true);
         $answer = $this->httpClient->get($url);
         $endTime = microtime(true);
-        $this->logger->warning('[OK] Finished performing Geonames API request', [
+        $this->logger->info('[OK] Finished performing Geonames API request', [
             'type' => $type,
             'totalTime' => $endTime - $beginTime,
             'originalCommandSubArguments' => $this->commandSubArguments,
@@ -335,6 +335,7 @@ class TheTimeBot extends Base {
      * Handles off a search in the Geonames API
      *
      * @return SendMessage
+     * @throws \Exception
      * @throws InvalidTimezoneId
      */
     private function performGeonamesSearch(): SendMessage

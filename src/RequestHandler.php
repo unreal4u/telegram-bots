@@ -62,7 +62,7 @@ class RequestHandler {
 
         $this->setupBotLogger($currentBot);
 
-        $rest_json = file_get_contents("php://input");
+        $rest_json = file_get_contents('php://input');
         $_POST = json_decode($rest_json, true);
 
         try {
