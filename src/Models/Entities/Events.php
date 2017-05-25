@@ -31,7 +31,7 @@ class Events extends Base
     /**
      * @var Monitors
      * @ManyToOne(targetEntity="monitors")
-     * @JoinColumn(referencedColumnName="id")
+     * @JoinColumn(referencedColumnName="id", onDelete="CASCADE")
      */
     protected $monitorId;
 
