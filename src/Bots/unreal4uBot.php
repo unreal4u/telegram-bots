@@ -20,17 +20,15 @@ class unreal4uBot extends Base
 {
     public function createAnswer(array $postData = []): TelegramMethods
     {
-        $method = null;
-
         try {
             $update = new Update($postData, $this->logger);
             $this->logger->debug('Incoming post data', $_POST);
-            $method = $this->performAction($update);
+            $this->response = $this->performAction($update);
         } catch (\Exception $e) {
             $this->logger->error(sprintf('Captured exception: "%s"', $e->getMessage()));
         }
 
-        return $method;
+        return $this->response;
     }
 
     public function performAction(Update $update): TelegramMethods
@@ -49,6 +47,12 @@ class unreal4uBot extends Base
 
         if (!empty($update->inline_query)) {
             $method = $this->inlineQuery($update);
+        }
+
+        if (!empty($update->callback_query)) {
+            $method = new SendMessage();
+            $method->text = 'Data on the callback query: '.$update->callback_query->data;
+            $method->chat_id = $update->callback_query->message->chat->id;
         }
 
         return $method;
