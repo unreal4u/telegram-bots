@@ -86,8 +86,11 @@ class unreal4uBot extends Base
         ));
         $query = $update->inline_query->query;
         if (empty($query)) {
-            $query = 'What is lmgtfy?';
+            $query = 'Enter a search term';
         }
+
+        $answerInlineQuery = new AnswerInlineQuery();
+        $answerInlineQuery->inline_query_id = $update->inline_query->id;
 
         // Number of results
         $i = 1;
@@ -102,8 +105,6 @@ class unreal4uBot extends Base
         $inlineQueryResultArticle->input_message_content = $inputMessageContentText;
         // @TODO find a way to compress this all into an identifiable 64bit ascii string, maybe with pack()?
         $inlineQueryResultArticle->id = md5(json_encode(['uid' => $update->inline_query->from->id, 'iqid' => $update->inline_query->id, 'rid' => $i]));
-        $answerInlineQuery = new AnswerInlineQuery();
-        $answerInlineQuery->inline_query_id = $update->inline_query->id;
         $answerInlineQuery->addResult($inlineQueryResultArticle);
 
         $i++;
@@ -117,6 +118,7 @@ class unreal4uBot extends Base
         $inlineQueryResultArticle->input_message_content = $inputMessageContentText;
         // @TODO find a way to compress this all into an identifiable 64bit ascii string, maybe with pack()?
         $inlineQueryResultArticle->id = md5(json_encode(['uid' => $update->inline_query->from->id, 'iqid' => $update->inline_query->id, 'rid' => $i]));
+        $answerInlineQuery->addResult($inlineQueryResultArticle);
 
         return $answerInlineQuery;
     }
