@@ -106,12 +106,26 @@ class unreal4uBot extends Base
         $answerInlineQuery->inline_query_id = $update->inline_query->id;
         $answerInlineQuery->addResult($inlineQueryResultArticle);
 
+        $i++;
+        $inlineQueryResultArticle = new Article();
+        $inlineQueryResultArticle->url = 'https://www.google.com/search?q=' . urlencode($query);
+        $inlineQueryResultArticle->title = $inlineQueryResultArticle->url; //'Forward this message to anyone you would like (Title)';
+        $inlineQueryResultArticle->hide_url = true;
+        $inputMessageContentText = new Text();
+        $inputMessageContentText->message_text = $inlineQueryResultArticle->url;
+        $inputMessageContentText->disable_web_page_preview = true;
+        $inlineQueryResultArticle->input_message_content = $inputMessageContentText;
+        // @TODO find a way to compress this all into an identifiable 64bit ascii string, maybe with pack()?
+        $inlineQueryResultArticle->id = md5(json_encode(['uid' => $update->inline_query->from->id, 'iqid' => $update->inline_query->id, 'rid' => $i]));
+
         return $answerInlineQuery;
     }
 
     /**
      * @FIXME this function name will probably change in the future!
      * This will download a file and offer it to the user
+     * @param Message $message
+     * @return TelegramMethods
      */
     private function downloadSticker(Message $message): TelegramMethods
     {
