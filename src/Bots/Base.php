@@ -50,6 +50,12 @@ abstract class Base implements Bots
     protected $userId = 0;
 
     /**
+     * The locale that the user uses
+     * @var string
+     */
+    protected $userLocale = 'en-US';
+
+    /**
      * Handy shortcut
      * @var int
      */
@@ -200,6 +206,7 @@ abstract class Base implements Bots
         // In a channel, we don't have a from field, so user isn't set
         if (is_object($telegramType->from)) {
             $this->userId = $telegramType->from->id;
+            $this->userLocale = $telegramType->from->language_code;
         }
         // We are now ready to get to know what the actual sent command was
         $this->extractBotCommand();

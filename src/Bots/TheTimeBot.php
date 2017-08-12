@@ -104,7 +104,6 @@ class TheTimeBot extends Base {
     {
         $this->logger->debug('[CMD] Inside HELP');
         $messageText  = '*Example commands:*'.PHP_EOL;
-        $messageText .= '- `/get America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
         $messageText .= '- `America/Santiago` -> Displays the current time in *America/Santiago*'.PHP_EOL;
         $messageText .= '- `Rotterdam` -> Will display a selection for which Rotterdam you actually mean'.PHP_EOL;
         $messageText .= '- `Republic of Mozambique` -> Will display the time for the timezone *Africa/Maputo*'.PHP_EOL;
@@ -453,6 +452,7 @@ class TheTimeBot extends Base {
         $this->logger->debug(sprintf('Calculating the time for timezone "%s"', $this->timezoneId));
 
         $localization = new localization();
+        $localization->setDefault($this->userLocale);
         $acceptedTimezone = $localization->setTimezone($this->timezoneId);
 
         if ($acceptedTimezone === $this->timezoneId) {
