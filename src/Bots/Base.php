@@ -104,6 +104,10 @@ abstract class Base implements Bots
      */
     protected $entities;
 
+    private $blacklistedChatIds = [
+        -1001361318801,
+    ];
+
     final public function __construct(
         LoggerInterface $logger,
         string $token,
@@ -208,10 +212,33 @@ abstract class Base implements Bots
             $this->userId = $telegramType->from->id;
             $this->userLocale = $telegramType->from->language_code;
         }
-        // We are now ready to get to know what the actual sent command was
-        $this->extractBotCommand();
+
+        if ($this->chatIsBlacklisted() === true) {
+            throw new \LogicException(sprintf('chatId "%d" has been blacklisted', $this->chatId));
+        } else {
+            // We are now ready to get to know what the actual sent command was
+            $this->extractBotCommand();
+        }
 
         return $this;
+    }
+
+    /**
+     * Prevents sending a message to certain chatIds that are known of being spammers
+     *
+     * This will prevent the bot command from being set, ultimately sending out a GetMe object
+     * which will be ignored from doing anything.
+     *
+     " @return bool
+     */
+    final private function chatIsBlacklisted(): bool
+    {
+        if (in_array($this->chatId, $this->blacklistedChatIds, true)) {
+            $this->logger->warning('Blacklisted chatId found', ['blacklistedId' => $this->chatId]);
+            return false;
+        }
+
+        return true;
     }
 
     /**
