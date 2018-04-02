@@ -236,11 +236,10 @@ abstract class Base implements Bots
     private function chatIsBlacklisted(): bool
     {
         if (\in_array($this->chatId, BLACKLISTED_CHATS, true)) {
-            $this->logger->warning('Blacklisted chatId found', ['blacklistedId' => $this->chatId]);
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
