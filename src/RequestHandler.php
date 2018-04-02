@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Monolog\Logger;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
 use unreal4u\TelegramBots\Bots\UptimeMonitorBot;
+use unreal4u\TelegramBots\Exceptions\ChatIsBlacklisted;
 
 class RequestHandler {
     /**
@@ -75,6 +76,9 @@ class RequestHandler {
             // Assume this went well
             $bot->sendResponse();
             $this->botLogger->debug(str_repeat('-', 20).' Finishing request '.str_repeat('-', 20));
+        } catch (ChatIsBlacklisted $e) {
+            $this->logger->warning('Blacklisted chatId found', ['blacklistedChatId' => $e->getBlacklistedChatId()]);
+            http_response_code(200);
         } catch (\Exception $e) {
             // Log in the specific bot logger instead of general log
             $this->botLogger->error(sprintf('Captured exception: "%s" for bot %s', $e->getMessage(), $currentBot));

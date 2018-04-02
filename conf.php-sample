@@ -6,6 +6,9 @@ define('BOT_TOKENS', [
     '123123123:asdasdasdas-asdasdasdasdasdadasd_ii' => 'AndAnotherBot',
 ]);
 
+// Known spammers
+define('BLACKLISTED_CHATS', []);
+
 define('ENVIRONMENT', 'production');
 define('MONOLOG_BOT', '123123123:asdasdasdas-asdasdasdasdasdadasd_gg');
 define('MONOLOG_CHATID', 12345678);

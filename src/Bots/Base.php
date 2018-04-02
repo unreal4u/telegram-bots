@@ -24,6 +24,7 @@ use unreal4u\TelegramAPI\Telegram\Types\User;
 use unreal4u\TelegramAPI\TgLog;
 use unreal4u\TelegramBots\Bots\Interfaces\Bots;
 use unreal4u\TelegramBots\DatabaseWrapper;
+use unreal4u\TelegramBots\Exceptions\ChatIsBlacklisted;
 use unreal4u\TelegramBots\Exceptions\InvalidUpdateObject;
 
 abstract class Base implements Bots
@@ -104,10 +105,6 @@ abstract class Base implements Bots
      */
     protected $entities;
 
-    private $blacklistedChatIds = [
-        -1001361318801,
-    ];
-
     final public function __construct(
         LoggerInterface $logger,
         string $token,
@@ -182,7 +179,7 @@ abstract class Base implements Bots
          */
         if (!empty($telegramType->data)) {
             $parsedUrl = parse_url($telegramType->data);
-            if (in_array($parsedUrl['path'], $this->validSubcommands())) {
+            if (\in_array($parsedUrl['path'], $this->validSubcommands())) {
                 $this->botCommand = $parsedUrl['path'];
                 parse_str($parsedUrl['query'], $this->subArguments);
             } else {
@@ -201,24 +198,29 @@ abstract class Base implements Bots
      *
      * @param Message $telegramType
      * @return Base
+     * @throws \unreal4u\TelegramBots\Exceptions\ChatIsBlacklisted
      */
-    final private function handleMessageObject(Message $telegramType): Base
+    private function handleMessageObject(Message $telegramType): Base
     {
         $this->message = $telegramType;
         $this->entities = $telegramType->entities;
         $this->chatId = $telegramType->chat->id;
+
+        // One of the first checks: chat is blacklisted
+        if ($this->chatIsBlacklisted() === true) {
+            $e = new ChatIsBlacklisted('Blacklisted chat found');
+            $e->setBlacklistedChatId($this->chatId);
+            throw $e;
+        }
+
         // In a channel, we don't have a from field, so user isn't set
-        if (is_object($telegramType->from)) {
+        if (\is_object($telegramType->from)) {
             $this->userId = $telegramType->from->id;
             $this->userLocale = $telegramType->from->language_code;
         }
 
-        if ($this->chatIsBlacklisted() === true) {
-            throw new \LogicException(sprintf('chatId "%d" has been blacklisted', $this->chatId));
-        } else {
-            // We are now ready to get to know what the actual sent command was
-            $this->extractBotCommand();
-        }
+        // We are now ready to get to know what the actual sent command was
+        $this->extractBotCommand();
 
         return $this;
     }
@@ -231,9 +233,9 @@ abstract class Base implements Bots
      *
      " @return bool
      */
-    final private function chatIsBlacklisted(): bool
+    private function chatIsBlacklisted(): bool
     {
-        if (in_array($this->chatId, $this->blacklistedChatIds, true)) {
+        if (\in_array($this->chatId, BLACKLISTED_CHATS, true)) {
             $this->logger->warning('Blacklisted chatId found', ['blacklistedId' => $this->chatId]);
             return false;
         }
@@ -260,7 +262,7 @@ abstract class Base implements Bots
      * @throws \Exception
      * @return Base
      */
-    final private function decomposeUpdateObject(): Base
+    private function decomposeUpdateObject(): Base
     {
         foreach ($this->updateObject as $telegramTypeName => $telegramType) {
             if ($telegramType instanceof Query || $telegramType instanceof ChosenResult) {
