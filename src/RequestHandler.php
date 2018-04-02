@@ -77,7 +77,7 @@ class RequestHandler {
             $bot->sendResponse();
             $this->botLogger->debug(str_repeat('-', 20).' Finishing request '.str_repeat('-', 20));
         } catch (ChatIsBlacklisted $e) {
-            $this->logger->warning('Blacklisted chatId found', ['blacklistedChatId' => $e->getBlacklistedChatId()]);
+            $this->logger->notice('Blacklisted chatId found', ['blacklistedChatId' => $e->getBlacklistedChatId()]);
             http_response_code(200);
         } catch (\Exception $e) {
             // Log in the specific bot logger instead of general log
