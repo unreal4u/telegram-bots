@@ -149,7 +149,7 @@ class Events extends Base
      */
     public function setUrMonitorUrl(string $urMonitorUrl): Events
     {
-        $this->urMonitorUrl = $urMonitorUrl;
+        $this->urMonitorUrl = substr($urMonitorUrl, 0, 255);
         return $this;
     }
 
