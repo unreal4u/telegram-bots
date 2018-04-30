@@ -100,7 +100,13 @@ class UptimeMonitorBot extends Base {
                 'monitorId' => $this->monitor->getId(),
                 'chatId' => $this->chatId,
             ]);
-            $this->response = new GetMe();
+            $this->response = new SendMessage();
+            $this->response->chat_id = $this->chatId;
+            $this->response->parse_mode = 'Markdown';
+            // Send short, concise messages without interference of links
+            $this->response->disable_web_page_preview = true;
+            $this->response->text = 'A monitor is either up or down, but is not configured properly at UptimeRobot.com';
+            $this->response->text .= '. Please check your settings or run /setup to try again.';
         }
 
         return $eventManager;
@@ -150,32 +156,24 @@ class UptimeMonitorBot extends Base {
     }
 
     /**
-     * Logic behind the creation of a new Event, either up or down
+     * Creates a message for either up or down to send to the user
      *
      * @param Events $event
      * @return TelegramMethods
      */
     private function createNotificationMessage(Events $event): TelegramMethods
     {
-        $this->monitor = $this->db
-            ->getRepository(Monitors::class)
-            ->find($event->getMonitorId())
-        ;
-
-        $this->response = new GetMe();
-        if (!empty($this->monitor)) {
-            $this->logger->info('Found a monitor corresponding to UUID, creating the message');
-            $this->response = new SendMessage();
-            $this->response->chat_id = $this->monitor->getChatId();
-            // No sense in trying to show webpage if it is down
-            $this->response->disable_web_page_preview = true;
-            // Allow basic decoration of text through markdown engine
-            $this->response->parse_mode = 'HTML';
-            if ($event->getAlertType() === 1) {
-                $this->response->text = $this->messageSiteIsDown($event);
-            } else {
-                $this->response->text = $this->messageSiteIsUp($event);
-            }
+        $this->logger->info('Found a monitor corresponding to UUID, creating the message');
+        $this->response = new SendMessage();
+        $this->response->chat_id = $this->chatId;
+        // No sense in trying to show webpage if it is down
+        $this->response->disable_web_page_preview = true;
+        // Allow basic decoration of text through markdown engine
+        $this->response->parse_mode = 'HTML';
+        if ($event->getAlertType() === 1) {
+            $this->response->text = $this->messageSiteIsDown($event);
+        } else {
+            $this->response->text = $this->messageSiteIsUp($event);
         }
 
         return $this->response;
@@ -497,9 +495,10 @@ class UptimeMonitorBot extends Base {
         if (empty($this->monitor)) {
             throw new InvalidRequest('Invalid incoming UUID detected: '.$uuid);
         }
+        $this->chatId = $this->monitor->getChatId();
         $this->logger->info('Valid monitor found', [
             'monitorId' => $this->monitor->getId(),
-            'chatId' => $this->monitor->getChatId(),
+            'chatId' => $this->chatId,
         ]);
 
         return $this;
