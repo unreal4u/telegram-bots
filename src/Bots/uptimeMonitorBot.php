@@ -98,7 +98,7 @@ class UptimeMonitorBot extends Base {
             $this->logger->debug('Saved event, creating notification message');
             $this->createNotificationMessage($event);
         } else {
-            $this->logger->warning('Invalid GET data found', [
+            $this->logger->info('Invalid GET data found', [
                 'monitorId' => $this->monitor->getId(),
                 'chatId' => $this->chatId,
             ]);
