@@ -7,6 +7,7 @@ namespace unreal4u\TelegramBots;
 use GuzzleHttp\Client;
 use Monolog\Logger;
 use unreal4u\TelegramAPI\Telegram\Types\Message;
+use unreal4u\TelegramBots\Bots\UptimeMonitor\EventManager;
 use unreal4u\TelegramBots\Bots\UptimeMonitorBot;
 use unreal4u\TelegramBots\Exceptions\ChatIsBlacklisted;
 
@@ -115,7 +116,7 @@ class RequestHandler {
                     $eventManager = $bot->handleUptimeMonitorNotification($_GET, $requestUriParts[1]);
                     /** @var Message $message */
                     $message = $bot->sendResponse();
-                    if ($message instanceof Message) {
+                    if ($message instanceof Message && $eventManager instanceof EventManager) {
                         $redirect = false;
                         if ($message->message_id !== false) {
                             // To be able to respond with a reply, quoting the original text
