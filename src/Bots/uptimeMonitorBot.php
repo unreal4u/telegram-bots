@@ -16,6 +16,7 @@ use unreal4u\TelegramBots\Bots\UptimeMonitor\RegenerateNotifyUrl\Regenerate;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step1;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step2;
 use unreal4u\TelegramBots\Bots\UptimeMonitor\Setup\Step3;
+use unreal4u\TelegramBots\Exceptions\ChatIsBlacklisted;
 use unreal4u\TelegramBots\Exceptions\InvalidRequest;
 use unreal4u\TelegramBots\Exceptions\InvalidSetupRequest;
 use unreal4u\TelegramBots\Models\Entities\Events;
@@ -81,6 +82,7 @@ class UptimeMonitorBot extends Base {
      * @param array $rawData
      * @param string $incomingUuid
      * @return EventManager
+     * @throws \unreal4u\TelegramBots\Exceptions\ChatIsBlacklisted
      * @throws InvalidRequest
      */
     public function handleUptimeMonitorNotification(array $rawData, string $incomingUuid): EventManager
@@ -484,6 +486,7 @@ class UptimeMonitorBot extends Base {
      *
      * @param string $uuid
      * @return UptimeMonitorBot
+     * @throws \unreal4u\TelegramBots\Exceptions\ChatIsBlacklisted
      * @throws InvalidRequest
      */
     private function checkValidity(string $uuid): UptimeMonitorBot
@@ -500,6 +503,11 @@ class UptimeMonitorBot extends Base {
             'monitorId' => $this->monitor->getId(),
             'chatId' => $this->chatId,
         ]);
+
+        // The stored chatId is blacklisted, stop the processing
+        if ($this->chatIsBlacklisted()) {
+            throw new ChatIsBlacklisted(sprintf('Requested chatId (%s) is blacklisted', $this->chatId));
+        }
 
         return $this;
     }

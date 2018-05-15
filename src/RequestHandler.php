@@ -28,6 +28,7 @@ class RequestHandler {
 
     public function __construct(Logger $logger, string $requestUri, Client $httpClient = null)
     {
+        $beginTime = microtime(true);
         $this->logger = $logger;
         if ($httpClient === null) {
             $httpClient = new Client();
@@ -43,6 +44,8 @@ class RequestHandler {
             // Can only be a request directly to out bot from Telegram servers
             $this->newBotRequest(BOT_TOKENS[$requestUri], $requestUri);
         }
+
+        $this->logger->debug(sprintf('Ending request. Total time: %f seconds', microtime(true) - $beginTime));
     }
 
     private function setupBotLogger(string $currentBot): RequestHandler
@@ -119,6 +122,8 @@ class RequestHandler {
                             $eventManager->setEventNotified($message->message_id);
                         }
                     }
+                } catch (ChatIsBlacklisted $e) {
+                    $this->logger->info($e->getMessage());
                 } catch (\Exception $e) {
                     $this->logger->error($e->getMessage().' (File: '.$e->getFile().':'.$e->getLine().')');
                     // Do nothing here and let the requestHandler redirect the user to my github page
